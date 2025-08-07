@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRVIO - 动态字段展示系统</title>
+    <style>
+        /* MacOS风格变量 */
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --error-color: #FF3B30;
+            --background-color: #F2F2F7;
+            --surface-color: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: #C6C6C8;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            margin-top: 60px;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        /* 左侧字段分类面板 */
+        .sidebar {
+            width: 320px;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .field-categories {
+            padding: 20px;
+        }
+
+        .category-section {
+            margin-bottom: 24px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .category-header:hover {
+            color: var(--primary-color);
+        }
+
+        .category-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .field-list {
+            margin-top: 12px;
+        }
+
+        .field-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .field-item:hover {
+            background: #E5E5EA;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            border-color: var(--primary-color);
+        }
+
+        .field-item.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .field-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .field-info {
+            flex: 1;
+        }
+
+        .field-name {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .field-type {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        .field-priority {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .priority-p0 {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .priority-p1 {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        /* 右侧字段详情面板 */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--surface-color);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .view-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .tab:hover {
+            background: var(--background-color);
+        }
+
+        .tab.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .content-workspace {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* 字段详情卡片 */
+        .field-detail-card {
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .field-properties {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .property-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .property-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .property-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            padding: 8px 12px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        .property-value.editable {
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .property-value.editable:hover {
+            border-color: var(--primary-color);
+            background: white;
+        }
+
+        /* 代码示例区域 */
+        .code-example {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 16px;
+            border-radius: var(--border-radius);
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+        }
+
+        .code-title {
+            color: #569cd6;
+            font-weight: 500;
+        }
+
+        .copy-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            background: var(--secondary-color);
+        }
+
+        /* 实时预览区域 */
+        .preview-section {
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .preview-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .preview-content {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 12px;
+            font-size: 14px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 标签样式 */
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .tag {
+            background: var(--background-color);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+        }
+
+        .tag.primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 300px;
+            }
+            
+            .field-properties {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .field-detail-card {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        /* 加载状态 */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="logo">AI</div>
+            <div>
+                <div class="brand-text">AIRVIO</div>
+                <div class="subtitle">动态字段展示系统</div>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <button class="btn-primary" onclick="exportFields()">导出配置</button>
+            <button class="btn-primary" onclick="refreshFields()">刷新数据</button>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧字段分类面板 -->
+        <div class="sidebar">
+            <div class="field-categories">
+                <div class="category-section">
+                    <div class="category-header" onclick="toggleCategory('core')">
+                        <div class="category-title">
+                            <span>🎯</span>
+                            <span>核心字段</span>
+                        </div>
+                        <div class="category-count">8</div>
+                    </div>
+                    <div class="field-list" id="core-fields">
+                        <div class="field-item" onclick="selectField('TOKEN_BUDGET_TOTAL')">
+                            <div class="field-icon" style="background: var(--primary-color); color: white;">T</div>
+                            <div class="field-info">
+                                <div class="field-name">TOKEN_BUDGET_TOTAL</div>
+                                <div class="field-type">token_budget</div>
+                            </div>
+                            <div class="field-priority priority-p0">P0</div>
+                        </div>
+                        <div class="field-item" onclick="selectField('MVP_DELIVERY_TIME')">
+                            <div class="field-icon" style="background: var(--success-color); color: white;">M</div>
+                            <div class="field-info">
+                                <div class="field-name">MVP_DELIVERY_TIME</div>
+                                <div class="field-type">timeline</div>
+                            </div>
+                            <div class="field-priority priority-p0">P0</div>
+                        </div>
+                        <div class="field-item" onclick="selectField('LEAN_STARTUP_CYCLE')">
+                            <div class="field-icon" style="background: var(--warning-color); color: white;">L</div>
+                            <div class="field-info">
+                                <div class="field-name">LEAN_STARTUP_CYCLE</div>
+                                <div class="field-type">object</div>
+                            </div>
+                            <div class="field-priority priority-p0">P0</div>
+                        </div>
+                        <div class="field-item" onclick="selectField('INVESTOR_READINESS_SCORE')">
+                            <div class="field-icon" style="background: var(--secondary-color); color: white;">I</div>
+                            <div class="field-info">
+                                <div class="field-name">INVESTOR_READINESS_SCORE</div>
+                                <div class="field-type">percentage</div>
+                            </div>
+                            <div class="field-priority priority-p0">P0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header" onclick="toggleCategory('gstr')">
+                        <div class="category-title">
+                            <span>🏗️</span>
+                            <span>GSTR架构</span>
+                        </div>
+                        <div class="category-count">4</div>
+                    </div>
+                    <div class="field-list" id="gstr-fields">
+                        <div class="field-item" onclick="selectField('GSTR_CORE_ARCHITECTURE')">
+                            <div class="field-icon" style="background: var(--primary-color); color: white;">G</div>
+                            <div class="field-info">
+                                <div class="field-name">GSTR_CORE_ARCHITECTURE</div>
+                                <div class="field-type">object</div>
+                            </div>
+                            <div class="field-priority priority-p0">P0</div>
+                        </div>
+                        <div class="field-item" onclick="selectField('GSTR_TOKEN_BUDGETS')">
+                            <div class="field-icon" style="background: var(--success-color); color: white;">B</div>
+                            <div class="field-info">
+                                <div class="field-name">GSTR_TOKEN_BUDGETS</div>
+                                <div class="field-type">object</div>
+                            </div>
+                            <div class="field-priority priority-p0">P0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="category-section">
+                    <div class="category-header" onclick="toggleCategory('budget')">
+                        <div class="category-title">
+                            <span>💰</span>
+                            <span>预算字段</span>
+                        </div>
+                        <div class="category-count">186</div>
+                    </div>
+                    <div class="field-list" id="budget-fields">
+                        <div class="field-item" onclick="selectField('TOKEN_BUDGET_1500T')">
+                            <div class="field-icon" style="background: var(--warning-color); color: white;">1.5K</div>
+                            <div class="field-info">
+                                <div class="field-name">TOKEN_BUDGET_1500T</div>
+                                <div class="field-type">string</div>
+                            </div>
+                            <div class="field-priority priority-p1">P1</div>
+                        </div>
+                        <div class="field-item" onclick="selectField('TIME_BUDGET_1_2')">
+                            <div class="field-icon" style="background: var(--secondary-color); color: white;">1-2</div>
+                            <div class="field-info">
+                                <div class="field-name">TIME_BUDGET_1_2</div>
+                                <div class="field-type">string</div>
+                            </div>
+                            <div class="field-priority priority-p1">P1</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧字段详情面板 -->
+        <div class="content-area">
+            <div class="content-header">
+                <div class="view-tabs">
+                    <button class="tab active" onclick="switchTab('detail')">字段详情</button>
+                    <button class="tab" onclick="switchTab('usage')">使用示例</button>
+                    <button class="tab" onclick="switchTab('preview')">实时预览</button>
+                </div>
+            </div>
+
+            <div class="content-workspace">
+                <div id="detail-view">
+                    <div class="field-detail-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <span>🎯</span>
+                                <span id="current-field-name">选择一个字段查看详情</span>
+                            </div>
+                            <div id="current-field-priority" class="field-priority priority-p0">P0</div>
+                        </div>
+                        <div class="card-body">
+                            <div class="field-properties">
+                                <div class="property-item">
+                                    <div class="property-label">中文名称</div>
+                                    <div class="property-value" id="field-zh-cn">-</div>
+                                </div>
+                                <div class="property-item">
+                                    <div class="property-label">英文名称</div>
+                                    <div class="property-value" id="field-en-us">-</div>
+                                </div>
+                                <div class="property-item">
+                                    <div class="property-label">字段类型</div>
+                                    <div class="property-value" id="field-type">-</div>
+                                </div>
+                                <div class="property-item">
+                                    <div class="property-label">优先级</div>
+                                    <div class="property-value" id="field-priority">-</div>
+                                </div>
+                                <div class="property-item">
+                                    <div class="property-label">AI协作级别</div>
+                                    <div class="property-value" id="field-ai-collaboration">-</div>
+                                </div>
+                                <div class="property-item">
+                                    <div class="property-label">创业阶段</div>
+                                    <div class="property-value" id="field-startup-phase">-</div>
+                                </div>
+                                <div class="property-item">
+                                    <div class="property-label">价值链位置</div>
+                                    <div class="property-value" id="field-value-chain">-</div>
+                                </div>
+                                <div class="property-item">
+                                    <div class="property-label">示例值</div>
+                                    <div class="property-value editable" id="field-example" onclick="editExample()">-</div>
+                                </div>
+                            </div>
+                            
+                            <div class="property-item">
+                                <div class="property-label">描述</div>
+                                <div class="property-value" id="field-description">-</div>
+                            </div>
+
+                            <div class="tags" id="field-tags">
+                                <!-- 标签将在这里动态生成 -->
+                            </div>
+
+                            <div class="code-example">
+                                <div class="code-header">
+                                    <div class="code-title">YAML 配置示例</div>
+                                    <button class="copy-btn" onclick="copyCode('yaml')">复制</button>
+                                </div>
+                                <pre id="yaml-code">选择字段查看配置示例</pre>
+                            </div>
+
+                            <div class="code-example">
+                                <div class="code-header">
+                                    <div class="code-title">Markdown 引用示例</div>
+                                    <button class="copy-btn" onclick="copyCode('markdown')">复制</button>
+                                </div>
+                                <pre id="markdown-code">选择字段查看引用示例</pre>
+                            </div>
+
+                            <div class="preview-section">
+                                <div class="preview-header">
+                                    <span>🔍</span>
+                                    <div class="preview-title">实时预览</div>
+                                </div>
+                                <div class="preview-content" id="field-preview">
+                                    选择字段查看实时预览效果
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="usage-view" style="display: none;">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        使用示例加载中...
+                    </div>
+                </div>
+
+                <div id="preview-view" style="display: none;">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        实时预览加载中...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 字段数据（基于AIRVIO项目的实际字段配置）
+        const fieldsData = {
+            'TOKEN_BUDGET_TOTAL': {
+                'zh-CN': '总Token预算',
+                'en-US': 'Total Token Budget',
+                'description': '完整创业周期的Token总预算',
+                'type': 'token_budget',
+                'priority': 'P0',
+                'ai_collaboration': 'L0',
+                'startup_phase': 'discovery',
+                'value_chain_position': 'business_value',
+                'tags': ['token-economy', 'mvp', 'DRY'],
+                'example': '53000',
+                'business_impact': {
+                    'user_value': '降低创业成本90%',
+                    'business_value': '提升MVP成功率3x',
+                    'roi_estimate': '300%+'
+                }
+            },
+            'MVP_DELIVERY_TIME': {
+                'zh-CN': 'MVP交付时间',
+                'en-US': 'MVP Delivery Time',
+                'description': '从启动到MVP上线的目标时间',
+                'type': 'timeline',
+                'priority': 'P0',
+                'ai_collaboration': 'L1',
+                'startup_phase': 'validation',
+                'value_chain_position': 'solution_design',
+                'tags': ['mvp', 'quick-launch', 'KISS'],
+                'example': '24小时',
+                'business_impact': {
+                    'user_value': '极速验证想法',
+                    'business_value': '抢占时间窗口',
+                    'roi_estimate': '时间成本节省80%'
+                }
+            },
+            'LEAN_STARTUP_CYCLE': {
+                'zh-CN': '精益创业循环',
+                'en-US': 'Lean Startup Cycle',
+                'description': '构建-测量-学习的核心循环机制',
+                'type': 'object',
+                'priority': 'P0',
+                'ai_collaboration': 'L1',
+                'startup_phase': 'validation',
+                'value_chain_position': 'solution_design',
+                'tags': ['lean-startup', 'mvp', 'user-centric'],
+                'example': '{
+  "build_timeline": "48-72小时",
+  "measure_timeline": "24-48小时",
+  "learn_timeline": "12-24小时"
+}',
+                'business_impact': {
+                    'user_value': '快速验证假设',
+                    'business_value': '降低失败风险',
+                    'roi_estimate': '风险降低70%'
+                }
+            },
+            'INVESTOR_READINESS_SCORE': {
+                'zh-CN': '投资人就绪度评分',
+                'en-US': 'Investor Readiness Score',
+                'description': '投资人评估的综合就绪度指标',
+                'type': 'percentage',
+                'priority': 'P0',
+                'ai_collaboration': 'L2',
+                'startup_phase': 'fundraising',
+                'value_chain_position': 'business_value',
+                'tags': ['lean-startup', 'business-value'],
+                'example': '≥90%',
+                'business_impact': {
+                    'user_value': '提升融资成功率',
+                    'business_value': '获得资本支持',
+                    'roi_estimate': '融资成功率提升50%'
+                }
+            },
+            'GSTR_CORE_ARCHITECTURE': {
+                'zh-CN': 'GSTR核心架构',
+                'en-US': 'GSTR Core Architecture',
+                'description': '目标-空间-时间-资源四元融合执行体系',
+                'type': 'object',
+                'priority': 'P0',
+                'ai_collaboration': 'L1',
+                'startup_phase': 'development',
+                'value_chain_position': 'solution_design',
+                'tags': ['SOLID', 'ai-native', 'lean-startup'],
+                'example': '{
+  "execution_formula": "目标驱决策→资源赋动能→空间布阵地→时间控节奏",
+  "goal_structure": "战略⟳战役⟳战术"
+}',
+                'business_impact': {
+                    'user_value': '清晰的执行框架',
+                    'business_value': '战略执行对齐',
+                    'roi_estimate': '3x执行效率'
+                }
+            },
+            'GSTR_TOKEN_BUDGETS': {
+                'zh-CN': 'GSTR Token预算',
+                'en-US': 'GSTR Token Budgets',
+                'description': '四元维度Token分配与优化',
+                'type': 'object',
+                'priority': 'P0',
+                'ai_collaboration': 'L0',
+                'startup_phase': 'development',
+                'value_chain_position': 'solution_design',
+                'tags': ['token-economy', 'DRY', 'ai-native'],
+                'example': '{
+  "goal_dimension": 800,
+  "resource_dimension": 600,
+  "space_dimension": 700,
+  "time_dimension": 500
+}',
+                'business_impact': {
+                    'user_value': '成本可控',
+                    'business_value': '资源效率≥85%',
+                    'roi_estimate': '45% Token节省'
+                }
+            },
+            'TOKEN_BUDGET_1500T': {
+                'zh-CN': '1500T配置',
+                'en-US': '1500T Configuration',
+                'description': '配置参数：1500T',
+                'type': 'string',
+                'priority': 'P1',
+                'ai_collaboration': 'L0',
+                'startup_phase': 'development',
+                'value_chain_position': 'solution_design',
+                'tags': ['token-budgets'],
+                'example': '1500T'
+            },
+            'TIME_BUDGET_1_2': {
+                'zh-CN': '1-2配置',
+                'en-US': '1-2 Configuration',
+                'description': '配置参数：1-2',
+                'type': 'string',
+                'priority': 'P1',
+                'ai_collaboration': 'L0',
+                'startup_phase': 'development',
+                'value_chain_position': 'solution_design',
+                'tags': ['time-budgets'],
+                'example': '1-2'
+            }
+        };
+
+        let currentField = null;
+        let currentTab = 'detail';
+
+        // 选择字段
+        function selectField(fieldName) {
+            // 移除之前的选中状态
+            document.querySelectorAll('.field-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 添加当前选中状态
+            event.target.closest('.field-item').classList.add('selected');
+            
+            currentField = fieldName;
+            updateFieldDetail(fieldName);
+        }
+
+        // 更新字段详情
+        function updateFieldDetail(fieldName) {
+            const field = fieldsData[fieldName];
+            if (!field) return;
+
+            // 更新基本信息
+            document.getElementById('current-field-name').textContent = fieldName;
+            document.getElementById('current-field-priority').textContent = field.priority;
+            document.getElementById('current-field-priority').className = `field-priority priority-${field.priority.toLowerCase()}`;
+            
+            document.getElementById('field-zh-cn').textContent = field['zh-CN'] || '-';
+            document.getElementById('field-en-us').textContent = field['en-US'] || '-';
+            document.getElementById('field-type').textContent = field.type || '-';
+            document.getElementById('field-priority').textContent = field.priority || '-';
+            document.getElementById('field-ai-collaboration').textContent = field.ai_collaboration || '-';
+            document.getElementById('field-startup-phase').textContent = field.startup_phase || '-';
+            document.getElementById('field-value-chain').textContent = field.value_chain_position || '-';
+            document.getElementById('field-description').textContent = field.description || '-';
+            document.getElementById('field-example').textContent = field.example || '-';
+
+            // 更新标签
+            const tagsContainer = document.getElementById('field-tags');
+            tagsContainer.innerHTML = '';
+            if (field.tags) {
+                field.tags.forEach((tag, index) => {
+                    const tagElement = document.createElement('div');
+                    tagElement.className = index === 0 ? 'tag primary' : 'tag';
+                    tagElement.textContent = tag;
+                    tagsContainer.appendChild(tagElement);
+                });
+            }
+
+            // 更新代码示例
+            updateCodeExamples(fieldName, field);
+            
+            // 更新预览
+            updatePreview(fieldName, field);
+        }
+
+        // 更新代码示例
+        function updateCodeExamples(fieldName, field) {
+            // YAML配置示例
+            const yamlCode = `dynamic_fields:
+  ${fieldName}:
+    zh-CN: ${field['zh-CN']}
+    en-US: ${field['en-US']}
+    description: ${field.description}
+    type: ${field.type}
+    priority: ${field.priority}
+    ai_collaboration: ${field.ai_collaboration}
+    startup_phase: ${field.startup_phase}
+    value_chain_position: ${field.value_chain_position}
+    tags:
+${field.tags ? field.tags.map(tag => `    - ${tag}`).join('\n') : '    - example-tag'}
+    example: ${field.example}`;
+            
+            document.getElementById('yaml-code').textContent = yamlCode;
+
+            // Markdown引用示例
+            const markdownCode = `<!-- 在Markdown文档中引用字段 -->
+{{dynamic_fields.${fieldName}}}
+
+<!-- 或者使用具体值 -->
+${field.example}
+
+<!-- 在表格中使用 -->
+| 字段名 | 值 | 描述 |
+|--------|----|---------|
+| ${field['zh-CN']} | {{dynamic_fields.${fieldName}}} | ${field.description} |`;
+            
+            document.getElementById('markdown-code').textContent = markdownCode;
+        }
+
+        // 更新预览
+        function updatePreview(fieldName, field) {
+            const previewContent = document.getElementById('field-preview');
+            
+            if (field.type === 'object') {
+                try {
+                    const exampleObj = JSON.parse(field.example);
+                    previewContent.innerHTML = `
+                        <div style="font-family: monospace; background: #f8f9fa; padding: 12px; border-radius: 4px; border-left: 4px solid var(--primary-color);">
+                            <strong>对象预览：</strong><br>
+                            <pre style="margin: 8px 0; white-space: pre-wrap;">${JSON.stringify(exampleObj, null, 2)}</pre>
+                        </div>
+                    `;
+                } catch (e) {
+                    previewContent.innerHTML = `
+                        <div style="padding: 12px; background: #fff3cd; border-radius: 4px; border-left: 4px solid var(--warning-color);">
+                            <strong>文本预览：</strong> ${field.example}
+                        </div>
+                    `;
+                }
+            } else {
+                previewContent.innerHTML = `
+                    <div style="padding: 12px; background: #d1ecf1; border-radius: 4px; border-left: 4px solid var(--primary-color);">
+                        <strong>字段值：</strong> <code style="background: white; padding: 2px 6px; border-radius: 3px;">${field.example}</code>
+                        <br><br>
+                        <strong>引用方式：</strong> <code style="background: white; padding: 2px 6px; border-radius: 3px;">{{dynamic_fields.${fieldName}}}</code>
+                    </div>
+                `;
+            }
+        }
+
+        // 切换标签页
+        function switchTab(tabName) {
+            // 更新标签状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 显示对应内容
+            document.querySelectorAll('[id$="-view"]').forEach(view => {
+                view.style.display = 'none';
+            });
+            document.getElementById(`${tabName}-view`).style.display = 'block';
+            
+            currentTab = tabName;
+        }
+
+        // 切换分类显示
+        function toggleCategory(categoryName) {
+            const fieldList = document.getElementById(`${categoryName}-fields`);
+            const isVisible = fieldList.style.display !== 'none';
+            fieldList.style.display = isVisible ? 'none' : 'block';
+        }
+
+        // 复制代码
+        function copyCode(type) {
+            const codeElement = document.getElementById(`${type}-code`);
+            const text = codeElement.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '已复制!';
+                btn.style.background = var('--success-color');
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = var('--primary-color');
+                }, 2000);
+            });
+        }
+
+        // 编辑示例值
+        function editExample() {
+            if (!currentField) return;
+            
+            const currentValue = document.getElementById('field-example').textContent;
+            const newValue = prompt('编辑示例值:', currentValue);
+            
+            if (newValue !== null && newValue !== currentValue) {
+                fieldsData[currentField].example = newValue;
+                document.getElementById('field-example').textContent = newValue;
+                updateCodeExamples(currentField, fieldsData[currentField]);
+                updatePreview(currentField, fieldsData[currentField]);
+            }
+        }
+
+        // 导出字段配置
+        function exportFields() {
+            const dataStr = JSON.stringify(fieldsData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'airvio-fields-config.json';
+            link.click();
+            
+            URL.revokeObjectURL(url);
+        }
+
+        // 刷新字段数据
+        function refreshFields() {
+            // 模拟数据刷新
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '刷新中...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.disabled = false;
+                alert('字段数据已刷新!');
+            }, 1500);
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 默认选择第一个字段
+            selectField('TOKEN_BUDGET_TOTAL');
+            document.querySelector('.field-item').classList.add('selected');
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'e':
+                        e.preventDefault();
+                        exportFields();
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        refreshFields();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

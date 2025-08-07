@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRVIO - 财务模型生成器</title>
+    <style>
+        /* MacOS风格变量 */
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --error-color: #FF3B30;
+            --background-color: #F2F2F7;
+            --surface-color: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: #C6C6C8;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--success-color), var(--primary-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056CC;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #28A745;
+        }
+
+        .btn-secondary {
+            background: var(--background-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            margin-top: 60px;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        /* 左侧参数配置面板 */
+        .sidebar {
+            width: 350px;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .config-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-group .form-input {
+            flex: 1;
+        }
+
+        .currency-symbol {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* 主内容区域 */
+        .content-area {
+            flex: 1;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .model-tabs {
+            display: flex;
+            gap: 2px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 2px;
+        }
+
+        .tab-button {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+
+        .tab-button.active {
+            background: white;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        /* 财务模型内容 */
+        .financial-model {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .model-section {
+            margin-bottom: 32px;
+            padding: 24px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        .model-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .metric-card {
+            padding: 20px;
+            background: white;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .metric-trend {
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .trend-positive {
+            background: rgba(52, 199, 89, 0.1);
+            color: var(--success-color);
+        }
+
+        .trend-negative {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--error-color);
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .metric-description {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 图表容器 */
+        .chart-container {
+            height: 300px;
+            background: white;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            margin-top: 16px;
+        }
+
+        /* 表格样式 */
+        .financial-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            margin-top: 16px;
+        }
+
+        .financial-table th,
+        .financial-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .financial-table th {
+            background: var(--background-color);
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .financial-table td {
+            font-size: 14px;
+        }
+
+        .financial-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .financial-table .number {
+            text-align: right;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .financial-table .positive {
+            color: var(--success-color);
+        }
+
+        .financial-table .negative {
+            color: var(--error-color);
+        }
+
+        /* 进度指示器 */
+        .progress-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 4px;
+            background: var(--background-color);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.3s ease;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 300px;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .model-section {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 隐藏非活动标签页 */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="logo">FM</div>
+            <div>
+                <div class="brand-text">AIRVIO Financial Model</div>
+                <div class="subtitle">智能财务模型生成器</div>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-secondary" onclick="exportModel()">📊 导出Excel</button>
+            <button class="btn btn-success" onclick="calculateModel()">💰 计算模型</button>
+            <button class="btn btn-primary" onclick="generateModel()">🚀 生成模型</button>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧参数配置面板 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">模型参数</div>
+                <div class="sidebar-subtitle">基于AIRVIO动态字段系统</div>
+            </div>
+
+            <!-- Token预算配置 -->
+            <div class="config-section">
+                <div class="section-title">💰 Token预算</div>
+                <div class="form-group">
+                    <label class="form-label">总Token预算</label>
+                    <input type="number" class="form-input" id="totalTokenBudget" value="53000" placeholder="53000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">效率目标</label>
+                    <input type="text" class="form-input" id="efficiencyTarget" value="85" placeholder="85">%
+                </div>
+                <div class="form-group">
+                    <label class="form-label">成本节省率</label>
+                    <input type="text" class="form-input" id="costSavings" value="45" placeholder="45">%
+                </div>
+            </div>
+
+            <!-- 收入模型 -->
+            <div class="config-section">
+                <div class="section-title">📈 收入模型</div>
+                <div class="form-group">
+                    <label class="form-label">月度用户增长率</label>
+                    <input type="number" class="form-input" id="userGrowthRate" value="20" placeholder="20">%
+                </div>
+                <div class="form-group">
+                    <label class="form-label">用户转化率</label>
+                    <input type="number" class="form-input" id="conversionRate" value="15" placeholder="15">%
+                </div>
+                <div class="form-group">
+                    <label class="form-label">平均客单价 (¥)</label>
+                    <input type="number" class="form-input" id="averageRevenue" value="299" placeholder="299">
+                </div>
+            </div>
+
+            <!-- 成本结构 -->
+            <div class="config-section">
+                <div class="section-title">📊 成本结构</div>
+                <div class="form-group">
+                    <label class="form-label">AI服务成本 (¥/月)</label>
+                    <input type="number" class="form-input" id="aiServiceCost" value="8000" placeholder="8000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">人力成本 (¥/月)</label>
+                    <input type="number" class="form-input" id="laborCost" value="25000" placeholder="25000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">运营成本 (¥/月)</label>
+                    <input type="number" class="form-input" id="operatingCost" value="5000" placeholder="5000">
+                </div>
+            </div>
+
+            <!-- 投资参数 -->
+            <div class="config-section">
+                <div class="section-title">💼 投资参数</div>
+                <div class="form-group">
+                    <label class="form-label">初始投资 (¥)</label>
+                    <input type="number" class="form-input" id="initialInvestment" value="500000" placeholder="500000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">预期ROI</label>
+                    <input type="text" class="form-input" id="expectedROI" value="300" placeholder="300">%
+                </div>
+                <div class="form-group">
+                    <label class="form-label">回收期 (月)</label>
+                    <input type="number" class="form-input" id="paybackPeriod" value="12" placeholder="12">
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="content-area">
+            <div class="content-header">
+                <div class="content-title">财务模型分析</div>
+                <div class="model-tabs">
+                    <button class="tab-button active" onclick="switchTab('overview')">概览</button>
+                    <button class="tab-button" onclick="switchTab('revenue')">收入</button>
+                    <button class="tab-button" onclick="switchTab('costs')">成本</button>
+                    <button class="tab-button" onclick="switchTab('cashflow')">现金流</button>
+                    <button class="tab-button" onclick="switchTab('roi')">ROI分析</button>
+                </div>
+            </div>
+
+            <div class="financial-model" id="financialModel">
+                <!-- 概览标签页 -->
+                <div id="overview" class="tab-content active">
+                    <div class="model-section">
+                        <div class="model-section-title">📊 核心财务指标</div>
+                        <div class="metrics-grid" id="coreMetrics">
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">月度经常性收入 (MRR)</div>
+                                    <div class="metric-trend trend-positive">↗ +25%</div>
+                                </div>
+                                <div class="metric-value" id="mrrValue">¥0</div>
+                                <div class="metric-description">基于用户增长和转化率计算</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">年度经常性收入 (ARR)</div>
+                                    <div class="metric-trend trend-positive">↗ +300%</div>
+                                </div>
+                                <div class="metric-value" id="arrValue">¥0</div>
+                                <div class="metric-description">年化收入预测</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">毛利率</div>
+                                    <div class="metric-trend trend-positive">↗ +15%</div>
+                                </div>
+                                <div class="metric-value" id="grossMargin">0%</div>
+                                <div class="metric-description">收入减去直接成本</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">净利润率</div>
+                                    <div class="metric-trend trend-positive">↗ +20%</div>
+                                </div>
+                                <div class="metric-value" id="netMargin">0%</div>
+                                <div class="metric-description">扣除所有成本后的利润率</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">客户获取成本 (CAC)</div>
+                                    <div class="metric-trend trend-negative">↘ -30%</div>
+                                </div>
+                                <div class="metric-value" id="cacValue">¥0</div>
+                                <div class="metric-description">获取单个客户的成本</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">客户生命周期价值 (LTV)</div>
+                                    <div class="metric-trend trend-positive">↗ +150%</div>
+                                </div>
+                                <div class="metric-value" id="ltvValue">¥0</div>
+                                <div class="metric-description">单个客户的总价值</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="model-section">
+                        <div class="model-section-title">💰 Token经济分析</div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">Token预算使用率</div>
+                                    <div class="metric-trend trend-positive">↗ 85%</div>
+                                </div>
+                                <div class="metric-value" id="tokenUsage">0%</div>
+                                <div class="metric-description">当前Token预算使用情况</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">Token成本节省</div>
+                                    <div class="metric-trend trend-positive">↗ 45%</div>
+                                </div>
+                                <div class="metric-value" id="tokenSavings">¥0</div>
+                                <div class="metric-description">相比传统方式节省的成本</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">AI效率提升</div>
+                                    <div class="metric-trend trend-positive">↗ 3x</div>
+                                </div>
+                                <div class="metric-value">300%</div>
+                                <div class="metric-description">AI原生架构带来的效率提升</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 收入标签页 -->
+                <div id="revenue" class="tab-content">
+                    <div class="model-section">
+                        <div class="model-section-title">📈 收入预测模型</div>
+                        <div class="chart-container">
+                            📊 收入增长趋势图 (集成Chart.js后显示)
+                        </div>
+                        <table class="financial-table">
+                            <thead>
+                                <tr>
+                                    <th>月份</th>
+                                    <th>新增用户</th>
+                                    <th>付费用户</th>
+                                    <th>月度收入</th>
+                                    <th>累计收入</th>
+                                </tr>
+                            </thead>
+                            <tbody id="revenueTable">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 成本标签页 -->
+                <div id="costs" class="tab-content">
+                    <div class="model-section">
+                        <div class="model-section-title">📊 成本结构分析</div>
+                        <div class="chart-container">
+                            🥧 成本分布饼图 (集成Chart.js后显示)
+                        </div>
+                        <table class="financial-table">
+                            <thead>
+                                <tr>
+                                    <th>成本类型</th>
+                                    <th>月度成本</th>
+                                    <th>年度成本</th>
+                                    <th>占比</th>
+                                    <th>优化潜力</th>
+                                </tr>
+                            </thead>
+                            <tbody id="costsTable">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 现金流标签页 -->
+                <div id="cashflow" class="tab-content">
+                    <div class="model-section">
+                        <div class="model-section-title">💸 现金流预测</div>
+                        <div class="chart-container">
+                            📈 现金流趋势图 (集成Chart.js后显示)
+                        </div>
+                        <table class="financial-table">
+                            <thead>
+                                <tr>
+                                    <th>月份</th>
+                                    <th>收入</th>
+                                    <th>支出</th>
+                                    <th>净现金流</th>
+                                    <th>累计现金流</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cashflowTable">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ROI分析标签页 -->
+                <div id="roi" class="tab-content">
+                    <div class="model-section">
+                        <div class="model-section-title">💼 投资回报分析</div>
+                        <div class="metrics-grid">
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">投资回报率 (ROI)</div>
+                                    <div class="metric-trend trend-positive">↗ 300%+</div>
+                                </div>
+                                <div class="metric-value" id="roiValue">0%</div>
+                                <div class="metric-description">基于3年期预测</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">净现值 (NPV)</div>
+                                    <div class="metric-trend trend-positive">↗ +¥2M</div>
+                                </div>
+                                <div class="metric-value" id="npvValue">¥0</div>
+                                <div class="metric-description">折现后的净收益</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">内部收益率 (IRR)</div>
+                                    <div class="metric-trend trend-positive">↗ 45%</div>
+                                </div>
+                                <div class="metric-value" id="irrValue">0%</div>
+                                <div class="metric-description">项目的内部收益率</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-header">
+                                    <div class="metric-label">投资回收期</div>
+                                    <div class="metric-trend trend-positive">↘ 12个月</div>
+                                </div>
+                                <div class="metric-value" id="paybackValue">0个月</div>
+                                <div class="metric-description">收回初始投资的时间</div>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            📊 ROI趋势分析图 (集成Chart.js后显示)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 财务模型数据
+        let financialData = {
+            tokenBudget: 53000,
+            efficiencyTarget: 85,
+            costSavings: 45,
+            userGrowthRate: 20,
+            conversionRate: 15,
+            averageRevenue: 299,
+            aiServiceCost: 8000,
+            laborCost: 25000,
+            operatingCost: 5000,
+            initialInvestment: 500000,
+            expectedROI: 300,
+            paybackPeriod: 12
+        };
+
+        // 标签页切换
+        function switchTab(tabName) {
+            // 隐藏所有标签页内容
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 移除所有按钮的活动状态
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 显示选中的标签页
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // 生成财务模型
+        function generateModel() {
+            updateFinancialData();
+            calculateModel();
+            renderAllTabs();
+        }
+
+        // 更新财务数据
+        function updateFinancialData() {
+            financialData.tokenBudget = parseInt(document.getElementById('totalTokenBudget').value) || 53000;
+            financialData.efficiencyTarget = parseInt(document.getElementById('efficiencyTarget').value) || 85;
+            financialData.costSavings = parseInt(document.getElementById('costSavings').value) || 45;
+            financialData.userGrowthRate = parseInt(document.getElementById('userGrowthRate').value) || 20;
+            financialData.conversionRate = parseInt(document.getElementById('conversionRate').value) || 15;
+            financialData.averageRevenue = parseInt(document.getElementById('averageRevenue').value) || 299;
+            financialData.aiServiceCost = parseInt(document.getElementById('aiServiceCost').value) || 8000;
+            financialData.laborCost = parseInt(document.getElementById('laborCost').value) || 25000;
+            financialData.operatingCost = parseInt(document.getElementById('operatingCost').value) || 5000;
+            financialData.initialInvestment = parseInt(document.getElementById('initialInvestment').value) || 500000;
+            financialData.expectedROI = parseInt(document.getElementById('expectedROI').value) || 300;
+            financialData.paybackPeriod = parseInt(document.getElementById('paybackPeriod').value) || 12;
+        }
+
+        // 计算财务模型
+        function calculateModel() {
+            // 计算核心指标
+            const monthlyUsers = 1000; // 初始用户数
+            const payingUsers = Math.round(monthlyUsers * financialData.conversionRate / 100);
+            const mrr = payingUsers * financialData.averageRevenue;
+            const arr = mrr * 12;
+            
+            const totalMonthlyCosts = financialData.aiServiceCost + financialData.laborCost + financialData.operatingCost;
+            const grossProfit = mrr - financialData.aiServiceCost;
+            const netProfit = mrr - totalMonthlyCosts;
+            
+            const grossMargin = mrr > 0 ? (grossProfit / mrr * 100).toFixed(1) : 0;
+            const netMargin = mrr > 0 ? (netProfit / mrr * 100).toFixed(1) : 0;
+            
+            const cac = totalMonthlyCosts / (monthlyUsers * financialData.userGrowthRate / 100);
+            const ltv = financialData.averageRevenue * 12; // 假设客户生命周期为1年
+            
+            // Token相关计算
+            const tokenUsage = (financialData.tokenBudget * financialData.efficiencyTarget / 100 / financialData.tokenBudget * 100).toFixed(1);
+            const tokenSavings = totalMonthlyCosts * financialData.costSavings / 100;
+            
+            // ROI计算
+            const annualProfit = netProfit * 12;
+            const roi = financialData.initialInvestment > 0 ? (annualProfit / financialData.initialInvestment * 100).toFixed(1) : 0;
+            const npv = annualProfit * 3 - financialData.initialInvestment; // 简化NPV计算
+            const irr = roi > 0 ? (roi * 0.8).toFixed(1) : 0; // 简化IRR计算
+            
+            // 更新UI
+            document.getElementById('mrrValue').textContent = `¥${mrr.toLocaleString()}`;
+            document.getElementById('arrValue').textContent = `¥${arr.toLocaleString()}`;
+            document.getElementById('grossMargin').textContent = `${grossMargin}%`;
+            document.getElementById('netMargin').textContent = `${netMargin}%`;
+            document.getElementById('cacValue').textContent = `¥${Math.round(cac).toLocaleString()}`;
+            document.getElementById('ltvValue').textContent = `¥${ltv.toLocaleString()}`;
+            document.getElementById('tokenUsage').textContent = `${tokenUsage}%`;
+            document.getElementById('tokenSavings').textContent = `¥${Math.round(tokenSavings).toLocaleString()}`;
+            document.getElementById('roiValue').textContent = `${roi}%`;
+            document.getElementById('npvValue').textContent = `¥${Math.round(npv).toLocaleString()}`;
+            document.getElementById('irrValue').textContent = `${irr}%`;
+            document.getElementById('paybackValue').textContent = `${financialData.paybackPeriod}个月`;
+        }
+
+        // 渲染所有标签页内容
+        function renderAllTabs() {
+            renderRevenueTable();
+            renderCostsTable();
+            renderCashflowTable();
+        }
+
+        // 渲染收入表格
+        function renderRevenueTable() {
+            const table = document.getElementById('revenueTable');
+            let html = '';
+            let cumulativeRevenue = 0;
+            let users = 1000;
+            
+            for (let month = 1; month <= 12; month++) {
+                const newUsers = Math.round(users * financialData.userGrowthRate / 100);
+                users += newUsers;
+                const payingUsers = Math.round(users * financialData.conversionRate / 100);
+                const monthlyRevenue = payingUsers * financialData.averageRevenue;
+                cumulativeRevenue += monthlyRevenue;
+                
+                html += `
+                    <tr>
+                        <td>第${month}月</td>
+                        <td class="number">${newUsers.toLocaleString()}</td>
+                        <td class="number">${payingUsers.toLocaleString()}</td>
+                        <td class="number positive">¥${monthlyRevenue.toLocaleString()}</td>
+                        <td class="number positive">¥${cumulativeRevenue.toLocaleString()}</td>
+                    </tr>
+                `;
+            }
+            
+            table.innerHTML = html;
+        }
+
+        // 渲染成本表格
+        function renderCostsTable() {
+            const table = document.getElementById('costsTable');
+            const totalMonthlyCost = financialData.aiServiceCost + financialData.laborCost + financialData.operatingCost;
+            
+            const costs = [
+                {
+                    type: 'AI服务成本',
+                    monthly: financialData.aiServiceCost,
+                    optimization: '30%'
+                },
+                {
+                    type: '人力成本',
+                    monthly: financialData.laborCost,
+                    optimization: '60%'
+                },
+                {
+                    type: '运营成本',
+                    monthly: financialData.operatingCost,
+                    optimization: '20%'
+                }
+            ];
+            
+            let html = '';
+            costs.forEach(cost => {
+                const percentage = (cost.monthly / totalMonthlyCost * 100).toFixed(1);
+                html += `
+                    <tr>
+                        <td>${cost.type}</td>
+                        <td class="number negative">¥${cost.monthly.toLocaleString()}</td>
+                        <td class="number negative">¥${(cost.monthly * 12).toLocaleString()}</td>
+                        <td class="number">${percentage}%</td>
+                        <td class="number positive">${cost.optimization}</td>
+                    </tr>
+                `;
+            });
+            
+            table.innerHTML = html;
+        }
+
+        // 渲染现金流表格
+        function renderCashflowTable() {
+            const table = document.getElementById('cashflowTable');
+            let html = '';
+            let cumulativeCashflow = -financialData.initialInvestment;
+            let users = 1000;
+            const totalMonthlyCosts = financialData.aiServiceCost + financialData.laborCost + financialData.operatingCost;
+            
+            for (let month = 1; month <= 12; month++) {
+                const newUsers = Math.round(users * financialData.userGrowthRate / 100);
+                users += newUsers;
+                const payingUsers = Math.round(users * financialData.conversionRate / 100);
+                const revenue = payingUsers * financialData.averageRevenue;
+                const expenses = totalMonthlyCosts;
+                const netCashflow = revenue - expenses;
+                cumulativeCashflow += netCashflow;
+                
+                html += `
+                    <tr>
+                        <td>第${month}月</td>
+                        <td class="number positive">¥${revenue.toLocaleString()}</td>
+                        <td class="number negative">¥${expenses.toLocaleString()}</td>
+                        <td class="number ${netCashflow >= 0 ? 'positive' : 'negative'}">¥${netCashflow.toLocaleString()}</td>
+                        <td class="number ${cumulativeCashflow >= 0 ? 'positive' : 'negative'}">¥${cumulativeCashflow.toLocaleString()}</td>
+                    </tr>
+                `;
+            }
+            
+            table.innerHTML = html;
+        }
+
+        // 导出Excel功能
+        function exportModel() {
+            alert('Excel导出功能开发中...');
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 监听输入变化
+            document.querySelectorAll('.form-input').forEach(input => {
+                input.addEventListener('input', function() {
+                    updateFinancialData();
+                    calculateModel();
+                });
+            });
+            
+            // 初始计算
+            calculateModel();
+            renderAllTabs();
+        });
+    </script>
+</body>
+</html>

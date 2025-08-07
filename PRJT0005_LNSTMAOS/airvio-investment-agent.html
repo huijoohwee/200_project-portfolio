@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRVIO - 投资智能体控制台</title>
+    <style>
+        /* MacOS风格变量 */
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --error-color: #FF3B30;
+            --background-color: #F2F2F7;
+            --surface-color: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: #C6C6C8;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --investment-color: #FF6B35;
+            --funding-color: #4ECDC4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--investment-color), var(--funding-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--investment-color);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .token-budget {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .budget-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-color);
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            margin-top: 60px;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        /* 左侧控制面板 */
+        .sidebar {
+            width: 320px;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .control-panel {
+            padding: 20px;
+        }
+
+        .panel-section {
+            margin-bottom: 24px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .investment-icon {
+            background: var(--investment-color);
+        }
+
+        .funding-icon {
+            background: var(--funding-color);
+        }
+
+        .metrics-icon {
+            background: var(--success-color);
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .control-item:hover {
+            background: #E5E5EA;
+            transform: translateY(-1px);
+        }
+
+        .control-label {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .control-value {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+
+        .status-active {
+            background: var(--success-color);
+        }
+
+        .status-warning {
+            background: var(--warning-color);
+        }
+
+        .status-error {
+            background: var(--error-color);
+        }
+
+        /* 右侧主工作区 */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--surface-color);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .view-tabs {
+            display: flex;
+            gap: 4px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .tab:hover {
+            background: var(--background-color);
+        }
+
+        .tab.active {
+            background: var(--investment-color);
+            color: white;
+        }
+
+        .content-workspace {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* 投资智能体卡片 */
+        .agent-card {
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--investment-color), var(--funding-color));
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .card-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .metric-item {
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--investment-color);
+        }
+
+        .metric-trend {
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .trend-up {
+            color: var(--success-color);
+        }
+
+        .trend-down {
+            color: var(--error-color);
+        }
+
+        /* 价值链可视化 */
+        .value-chain {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .chain-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 120px;
+            padding: 12px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            border: 2px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .chain-step.active {
+            border-color: var(--investment-color);
+            background: rgba(255, 107, 53, 0.1);
+        }
+
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--investment-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .step-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .step-status {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .chain-arrow {
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        /* Token预算控制 */
+        .budget-control {
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .budget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .budget-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .budget-total {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--investment-color);
+        }
+
+        .budget-bar {
+            width: 100%;
+            height: 8px;
+            background: #E5E5EA;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .budget-progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), var(--investment-color));
+            transition: width 0.3s ease;
+        }
+
+        .budget-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
+        }
+
+        .budget-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            padding: 4px 0;
+        }
+
+        .budget-label {
+            color: var(--text-secondary);
+        }
+
+        .budget-amount {
+            font-weight: 600;
+        }
+
+        /* 操作按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--investment-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #E55A2B;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: var(--funding-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #45B7B8;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--investment-color);
+            border: 2px solid var(--investment-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--investment-color);
+            color: white;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .value-chain {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .chain-arrow {
+                transform: rotate(90deg);
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="logo">💰</div>
+            <div>
+                <div class="brand-text">AIRVIO Investment Agent</div>
+                <div class="subtitle">智能投资决策系统</div>
+            </div>
+        </div>
+        <div class="nav-controls">
+            <div class="token-budget">
+                <div class="budget-indicator"></div>
+                <span>Token预算: 53,000</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧控制面板 -->
+        <div class="sidebar">
+            <div class="control-panel">
+                <!-- 投资人就绪度 -->
+                <div class="panel-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <div class="section-icon investment-icon">📊</div>
+                            投资人就绪度
+                        </div>
+                    </div>
+                    <div class="control-item" onclick="updateReadinessScore()">
+                        <div class="control-label">就绪度评分</div>
+                        <div class="control-value">
+                            <span id="readiness-score">90%</span>
+                            <div class="status-indicator status-active"></div>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-label">融资成功率</div>
+                        <div class="control-value">
+                            <span>≥70%</span>
+                            <div class="status-indicator status-active"></div>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-label">问题验证率</div>
+                        <div class="control-value">
+                            <span>≥80%</span>
+                            <div class="status-indicator status-active"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 融资智能体 -->
+                <div class="panel-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <div class="section-icon funding-icon">🤖</div>
+                            融资智能体
+                        </div>
+                    </div>
+                    <div class="control-item" onclick="activateAgent('fundraising')">
+                        <div class="control-label">智能体状态</div>
+                        <div class="control-value">
+                            <span id="agent-status">活跃</span>
+                            <div class="status-indicator status-active"></div>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-label">Token预算</div>
+                        <div class="control-value">
+                            <span>8,000T</span>
+                            <div class="status-indicator status-active"></div>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-label">自动化协作</div>
+                        <div class="control-value">
+                            <span>≥90%</span>
+                            <div class="status-indicator status-active"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 关键指标 -->
+                <div class="panel-section">
+                    <div class="section-header">
+                        <div class="section-title">
+                            <div class="section-icon metrics-icon">📈</div>
+                            关键指标
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-label">用户增长率</div>
+                        <div class="control-value">
+                            <span>≥20%/月</span>
+                            <div class="status-indicator status-active"></div>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-label">用户满意度</div>
+                        <div class="control-value">
+                            <span>≥85%</span>
+                            <div class="status-indicator status-active"></div>
+                        </div>
+                    </div>
+                    <div class="control-item">
+                        <div class="control-label">MVP成功率</div>
+                        <div class="control-value">
+                            <span>3x提升</span>
+                            <div class="status-indicator status-active"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧主工作区 -->
+        <div class="content-area">
+            <div class="content-header">
+                <h2>投资智能体控制台</h2>
+                <div class="view-tabs">
+                    <button class="tab active" onclick="switchTab('overview')">概览</button>
+                    <button class="tab" onclick="switchTab('analysis')">分析</button>
+                    <button class="tab" onclick="switchTab('reports')">报告</button>
+                    <button class="tab" onclick="switchTab('settings')">设置</button>
+                </div>
+            </div>
+
+            <div class="content-workspace">
+                <!-- 投资智能体概览卡片 -->
+                <div class="agent-card slide-in">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>🤖</span>
+                            投资智能体状态
+                        </div>
+                        <div class="card-status">运行中</div>
+                    </div>
+                    <div class="card-body">
+                        <!-- 关键指标网格 -->
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <div class="metric-label">投资人就绪度</div>
+                                <div class="metric-value" id="investor-readiness">90%</div>
+                                <div class="metric-trend trend-up">↗ +5% 本周</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">融资成功率</div>
+                                <div class="metric-value">70%</div>
+                                <div class="metric-trend trend-up">↗ 目标达成</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">Token效率</div>
+                                <div class="metric-value">85%</div>
+                                <div class="metric-trend trend-up">↗ 优化中</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">自动化程度</div>
+                                <div class="metric-value">90%</div>
+                                <div class="metric-trend trend-up">↗ 高效运行</div>
+                            </div>
+                        </div>
+
+                        <!-- 价值链可视化 -->
+                        <div class="value-chain">
+                            <div class="chain-step active">
+                                <div class="step-icon">🔍</div>
+                                <div class="step-title">发现阶段</div>
+                                <div class="step-status">市场痛点验证</div>
+                            </div>
+                            <div class="chain-arrow">→</div>
+                            <div class="chain-step active">
+                                <div class="step-icon">✅</div>
+                                <div class="step-title">验证阶段</div>
+                                <div class="step-status">MVP构建测试</div>
+                            </div>
+                            <div class="chain-arrow">→</div>
+                            <div class="chain-step active">
+                                <div class="step-icon">🚀</div>
+                                <div class="step-title">开发阶段</div>
+                                <div class="step-status">产品功能完善</div>
+                            </div>
+                            <div class="chain-arrow">→</div>
+                            <div class="chain-step">
+                                <div class="step-icon">📈</div>
+                                <div class="step-title">启动阶段</div>
+                                <div class="step-status">市场推广获客</div>
+                            </div>
+                            <div class="chain-arrow">→</div>
+                            <div class="chain-step">
+                                <div class="step-icon">💰</div>
+                                <div class="step-title">融资阶段</div>
+                                <div class="step-status">投资人路演</div>
+                            </div>
+                        </div>
+
+                        <!-- Token预算控制 -->
+                        <div class="budget-control">
+                            <div class="budget-header">
+                                <div class="budget-title">Token预算分配</div>
+                                <div class="budget-total">53,000T</div>
+                            </div>
+                            <div class="budget-bar">
+                                <div class="budget-progress" style="width: 65%;"></div>
+                            </div>
+                            <div class="budget-breakdown">
+                                <div class="budget-item">
+                                    <span class="budget-label">发现链</span>
+                                    <span class="budget-amount">3,000T</span>
+                                </div>
+                                <div class="budget-item">
+                                    <span class="budget-label">验证链</span>
+                                    <span class="budget-amount">4,000T</span>
+                                </div>
+                                <div class="budget-item">
+                                    <span class="budget-label">开发链</span>
+                                    <span class="budget-amount">5,000T</span>
+                                </div>
+                                <div class="budget-item">
+                                    <span class="budget-label">启动链</span>
+                                    <span class="budget-amount">3,000T</span>
+                                </div>
+                                <div class="budget-item">
+                                    <span class="budget-label">融资链</span>
+                                    <span class="budget-amount">8,000T</span>
+                                </div>
+                                <div class="budget-item">
+                                    <span class="budget-label">智能体编排</span>
+                                    <span class="budget-amount">9,800T</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 操作按钮 -->
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="generatePitchDeck()">
+                                <span>📊</span>
+                                生成路演材料
+                            </button>
+                            <button class="btn btn-secondary" onclick="analyzeInvestorFit()">
+                                <span>🎯</span>
+                                投资人匹配分析
+                            </button>
+                            <button class="btn btn-outline" onclick="exportReport()">
+                                <span>📄</span>
+                                导出投资报告
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 融资链路分析卡片 -->
+                <div class="agent-card slide-in">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span>💰</span>
+                            融资链路分析
+                        </div>
+                        <div class="card-status">实时监控</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <div class="metric-label">数据包装完成度</div>
+                                <div class="metric-value">85%</div>
+                                <div class="metric-trend trend-up">↗ 进行中</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">路演材料就绪</div>
+                                <div class="metric-value">90%</div>
+                                <div class="metric-trend trend-up">↗ 近期完成</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">投资人接触数</div>
+                                <div class="metric-value">12</div>
+                                <div class="metric-trend trend-up">↗ 持续增长</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-label">预期融资金额</div>
+                                <div class="metric-value">$2M</div>
+                                <div class="metric-trend trend-up">↗ 目标范围</div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="btn btn-primary" onclick="startFundraisingProcess()">
+                                <span>🚀</span>
+                                启动融资流程
+                            </button>
+                            <button class="btn btn-secondary" onclick="scheduleInvestorMeetings()">
+                                <span>📅</span>
+                                安排投资人会议
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 动态字段配置
+        const dynamicFields = {
+            TOKEN_BUDGET_TOTAL: 53000,
+            INVESTOR_READINESS_SCORE: 90,
+            VALUE_CAUSAL_CHAIN: {
+                fundraising_chain: {
+                    expression: "基于(市场牵引)→通过[数据包装+路演材料]→实现{融资成功}",
+                    token_budget: 8000,
+                    investor_value: "融资成功率≥70%"
+                }
+            },
+            AGENT_ORCHESTRATION: {
+                fundraising_agent: 2500,
+                monitoring_agent: 300
+            },
+            STARTUP_SUCCESS_METRICS_MATRIX: {
+                investor_readiness: "≥90%",
+                fundraising_success_rate: "≥70%"
+            }
+        };
+
+        // 切换标签页
+        function switchTab(tabName) {
+            // 移除所有活跃状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 添加活跃状态到当前标签
+            event.target.classList.add('active');
+            
+            // 这里可以添加切换内容的逻辑
+            console.log('切换到标签:', tabName);
+        }
+
+        // 更新投资人就绪度评分
+        function updateReadinessScore() {
+            const score = dynamicFields.INVESTOR_READINESS_SCORE;
+            document.getElementById('readiness-score').textContent = score + '%';
+            document.getElementById('investor-readiness').textContent = score + '%';
+            
+            // 添加动画效果
+            document.getElementById('investor-readiness').classList.add('pulse');
+            setTimeout(() => {
+                document.getElementById('investor-readiness').classList.remove('pulse');
+            }, 2000);
+        }
+
+        // 激活智能体
+        function activateAgent(agentType) {
+            const statusElement = document.getElementById('agent-status');
+            statusElement.textContent = '激活中...';
+            
+            setTimeout(() => {
+                statusElement.textContent = '活跃';
+                console.log(`${agentType} 智能体已激活`);
+            }, 1000);
+        }
+
+        // 生成路演材料
+        function generatePitchDeck() {
+            alert('正在生成路演材料...\n\n基于动态字段配置:\n- 融资链Token预算: 8,000T\n- 投资人就绪度: 90%\n- 融资成功率目标: ≥70%');
+        }
+
+        // 投资人匹配分析
+        function analyzeInvestorFit() {
+            alert('正在分析投资人匹配度...\n\n分析维度:\n- 行业偏好匹配\n- 投资阶段匹配\n- 投资金额范围\n- 地理位置偏好');
+        }
+
+        // 导出投资报告
+        function exportReport() {
+            const reportData = {
+                timestamp: new Date().toISOString(),
+                investor_readiness: dynamicFields.INVESTOR_READINESS_SCORE + '%',
+                token_budget: dynamicFields.TOKEN_BUDGET_TOTAL,
+                fundraising_budget: dynamicFields.VALUE_CAUSAL_CHAIN.fundraising_chain.token_budget,
+                success_metrics: dynamicFields.STARTUP_SUCCESS_METRICS_MATRIX
+            };
+            
+            const blob = new Blob([JSON.stringify(reportData, null, 2)], {
+                type: 'application/json'
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'investment-agent-report.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 启动融资流程
+        function startFundraisingProcess() {
+            alert('启动融资流程...\n\n流程步骤:\n1. 数据包装 (85% 完成)\n2. 路演材料准备 (90% 完成)\n3. 投资人接触\n4. 尽职调查\n5. 条款谈判');
+        }
+
+        // 安排投资人会议
+        function scheduleInvestorMeetings() {
+            alert('安排投资人会议...\n\n当前状态:\n- 已接触投资人: 12位\n- 待安排会议: 5场\n- 本周计划: 3场路演');
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 添加入场动画
+            setTimeout(() => {
+                document.querySelectorAll('.agent-card').forEach((card, index) => {
+                    setTimeout(() => {
+                        card.classList.add('slide-in');
+                    }, index * 200);
+                });
+            }, 100);
+
+            // 模拟实时数据更新
+            setInterval(() => {
+                const progressBar = document.querySelector('.budget-progress');
+                const currentWidth = parseInt(progressBar.style.width);
+                const newWidth = Math.min(currentWidth + Math.random() * 2, 85);
+                progressBar.style.width = newWidth + '%';
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

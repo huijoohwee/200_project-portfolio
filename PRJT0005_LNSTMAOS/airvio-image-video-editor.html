@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRVIO - AI智能图片剪辑编辑器</title>
+    <style>
+        /* MacOS风格变量 */
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --error-color: #FF3B30;
+            --background-color: #F2F2F7;
+            --surface-color: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: #C6C6C8;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056CC;
+        }
+
+        .btn-secondary {
+            background: var(--background-color);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 320px;
+            height: calc(100vh - 60px);
+            margin-top: 60px;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        /* 左侧工具面板 */
+        .tools-panel {
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .panel-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .tools-section {
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .tool-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .tool-item:hover {
+            background: #E3F2FD;
+            border-color: var(--primary-color);
+        }
+
+        .tool-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tool-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .tool-name {
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        /* 动态字段配置 */
+        .field-config {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .field-item {
+            margin-bottom: 16px;
+        }
+
+        .field-label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+        }
+
+        .field-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .field-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .field-slider {
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        .field-value {
+            font-size: 12px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        /* 中央编辑区域 */
+        .editor-area {
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .editor-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--background-color);
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toolbar-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 6px;
+            background: var(--surface-color);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .toolbar-btn:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .toolbar-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 画布区域 */
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #1a1a1a;
+            position: relative;
+        }
+
+        .canvas {
+            width: 800px;
+            height: 450px;
+            background: #000;
+            border-radius: var(--border-radius);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(0, 122, 255, 0.1), rgba(88, 86, 214, 0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .media-element {
+            position: absolute;
+            border: 2px solid var(--primary-color);
+            border-radius: 4px;
+            cursor: move;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .media-element.selected {
+            border-color: var(--warning-color);
+            box-shadow: 0 0 0 2px rgba(255, 149, 0, 0.3);
+        }
+
+        .resize-handle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--warning-color);
+            border-radius: 50%;
+            cursor: nw-resize;
+        }
+
+        .resize-handle.top-left { top: -4px; left: -4px; }
+        .resize-handle.top-right { top: -4px; right: -4px; cursor: ne-resize; }
+        .resize-handle.bottom-left { bottom: -4px; left: -4px; cursor: sw-resize; }
+        .resize-handle.bottom-right { bottom: -4px; right: -4px; cursor: se-resize; }
+
+        /* 时间轴 */
+        .timeline {
+            height: 120px;
+            background: var(--background-color);
+            border-top: 1px solid var(--border-color);
+            padding: 16px 20px;
+        }
+
+        .timeline-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .timeline-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .timeline-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .timeline-track {
+            height: 60px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            position: relative;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+        }
+
+        .timeline-clip {
+            position: absolute;
+            height: 40px;
+            top: 10px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 4px;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .timeline-clip:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--error-color);
+            z-index: 10;
+            left: 100px;
+        }
+
+        /* 右侧属性面板 */
+        .properties-panel {
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .properties-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .properties-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .property-group {
+            margin-bottom: 20px;
+        }
+
+        .property-label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .property-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .property-input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .property-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .color-picker {
+            width: 40px;
+            height: 32px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* AI生成面板 */
+        .ai-panel {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .ai-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-prompt {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            margin-bottom: 12px;
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .ai-generate-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .ai-generate-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .ai-suggestions {
+            margin-top: 16px;
+        }
+
+        .suggestion-item {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .suggestion-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Token预算显示 */
+        .token-budget {
+            padding: 16px 20px;
+            background: var(--background-color);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .budget-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .budget-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .budget-value {
+            font-size: 14px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .budget-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .budget-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), var(--warning-color));
+            transition: var(--transition);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 260px 1fr 280px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+            }
+            
+            .tools-panel,
+            .properties-panel {
+                height: auto;
+                max-height: 300px;
+            }
+
+            .canvas {
+                width: 100%;
+                height: 300px;
+            }
+        }
+
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .processing {
+            animation: processing 2s infinite;
+        }
+
+        @keyframes processing {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* 拖拽效果 */
+        .dragging {
+            opacity: 0.8;
+            transform: scale(1.05);
+            z-index: 1000;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--primary-color);
+            background: rgba(0, 122, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="logo">🎬</div>
+            <div>
+                <div class="brand-text">AIRVIO</div>
+                <div class="subtitle">AI智能图片剪辑编辑器</div>
+            </div>
+        </div>
+        <div class="nav-controls">
+            <button class="btn btn-secondary" onclick="saveProject()">💾 保存</button>
+            <button class="btn btn-primary" onclick="exportVideo()">📤 导出</button>
+            <button class="btn btn-secondary" onclick="previewVideo()">▶️ 预览</button>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧工具面板 -->
+        <div class="tools-panel">
+            <div class="panel-header">
+                <div class="panel-title">编辑工具</div>
+                <div class="panel-subtitle">AI驱动的智能剪辑工具</div>
+            </div>
+            
+            <!-- 基础工具 -->
+            <div class="tools-section">
+                <div class="section-title">基础工具</div>
+                <div class="tool-grid">
+                    <div class="tool-item active" data-tool="select">
+                        <div class="tool-icon">🎯</div>
+                        <div class="tool-name">选择</div>
+                    </div>
+                    <div class="tool-item" data-tool="crop">
+                        <div class="tool-icon">✂️</div>
+                        <div class="tool-name">裁剪</div>
+                    </div>
+                    <div class="tool-item" data-tool="text">
+                        <div class="tool-icon">📝</div>
+                        <div class="tool-name">文字</div>
+                    </div>
+                    <div class="tool-item" data-tool="filter">
+                        <div class="tool-icon">🎨</div>
+                        <div class="tool-name">滤镜</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI工具 -->
+            <div class="tools-section">
+                <div class="section-title">AI工具</div>
+                <div class="tool-grid">
+                    <div class="tool-item" data-tool="ai-enhance">
+                        <div class="tool-icon">✨</div>
+                        <div class="tool-name">AI增强</div>
+                    </div>
+                    <div class="tool-item" data-tool="ai-remove">
+                        <div class="tool-icon">🗑️</div>
+                        <div class="tool-name">智能移除</div>
+                    </div>
+                    <div class="tool-item" data-tool="ai-style">
+                        <div class="tool-icon">🎭</div>
+                        <div class="tool-name">风格转换</div>
+                    </div>
+                    <div class="tool-item" data-tool="ai-motion">
+                        <div class="tool-icon">🌊</div>
+                        <div class="tool-name">动态效果</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 动态字段配置 -->
+            <div class="field-config">
+                <div class="section-title">动态字段配置</div>
+                
+                <div class="field-item">
+                    <div class="field-label">分辨率</div>
+                    <select class="field-input" id="resolution">
+                        <option value="1920x1080">1920x1080 (Full HD)</option>
+                        <option value="1280x720">1280x720 (HD)</option>
+                        <option value="3840x2160">3840x2160 (4K)</option>
+                    </select>
+                </div>
+
+                <div class="field-item">
+                    <div class="field-label">帧率</div>
+                    <input type="range" class="field-slider" id="framerate" min="24" max="60" value="30">
+                    <div class="field-value"><span id="framerateValue">30</span> fps</div>
+                </div>
+
+                <div class="field-item">
+                    <div class="field-label">时长</div>
+                    <input type="number" class="field-input" id="duration" value="10" min="1" max="300">
+                </div>
+
+                <div class="field-item">
+                    <div class="field-label">质量</div>
+                    <input type="range" class="field-slider" id="quality" min="1" max="10" value="8">
+                    <div class="field-value">质量: <span id="qualityValue">8</span>/10</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中央编辑区域 -->
+        <div class="editor-area">
+            <!-- 编辑器工具栏 -->
+            <div class="editor-toolbar">
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" title="撤销" onclick="undo()">↶</button>
+                    <button class="toolbar-btn" title="重做" onclick="redo()">↷</button>
+                    <button class="toolbar-btn" title="缩放适应" onclick="fitToScreen()">🔍</button>
+                </div>
+                <div class="toolbar-group">
+                    <span style="font-size: 14px; color: var(--text-secondary);">缩放: 100%</span>
+                </div>
+                <div class="toolbar-group">
+                    <button class="toolbar-btn" title="网格" onclick="toggleGrid()">⊞</button>
+                    <button class="toolbar-btn" title="标尺" onclick="toggleRuler()">📏</button>
+                    <button class="toolbar-btn" title="对齐" onclick="toggleSnap()">🧲</button>
+                </div>
+            </div>
+
+            <!-- 画布区域 -->
+            <div class="canvas-container" id="canvasContainer">
+                <div class="canvas" id="mainCanvas">
+                    <div class="canvas-overlay" id="canvasOverlay">
+                        <div style="text-align: center;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">🎬</div>
+                            <div>拖拽图片或视频到此处开始编辑</div>
+                            <div style="font-size: 12px; opacity: 0.7; margin-top: 8px;">支持 JPG, PNG, MP4, MOV 格式</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 时间轴 -->
+            <div class="timeline">
+                <div class="timeline-header">
+                    <div class="timeline-title">时间轴</div>
+                    <div class="timeline-controls">
+                        <button class="toolbar-btn" onclick="playPause()">▶️</button>
+                        <button class="toolbar-btn" onclick="stopPlayback()">⏹️</button>
+                        <span style="font-size: 12px; color: var(--text-secondary);">00:00 / 00:10</span>
+                    </div>
+                </div>
+                <div class="timeline-track" id="timelineTrack">
+                    <div class="playhead" id="playhead"></div>
+                    <div class="timeline-clip" style="left: 20px; width: 150px;">图片素材 1</div>
+                    <div class="timeline-clip" style="left: 180px; width: 200px;">视频素材 1</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧属性面板 -->
+        <div class="properties-panel">
+            <div class="panel-header">
+                <div class="panel-title">属性面板</div>
+                <div class="panel-subtitle">当前选中: 无</div>
+            </div>
+
+            <!-- 变换属性 -->
+            <div class="properties-section">
+                <div class="properties-title">变换</div>
+                <div class="property-group">
+                    <div class="property-label">位置</div>
+                    <div class="property-row">
+                        <input type="number" class="property-input" placeholder="X" value="0">
+                        <input type="number" class="property-input" placeholder="Y" value="0">
+                    </div>
+                </div>
+                <div class="property-group">
+                    <div class="property-label">尺寸</div>
+                    <div class="property-row">
+                        <input type="number" class="property-input" placeholder="宽度" value="800">
+                        <input type="number" class="property-input" placeholder="高度" value="450">
+                    </div>
+                </div>
+                <div class="property-group">
+                    <div class="property-label">旋转</div>
+                    <input type="range" class="field-slider" min="-180" max="180" value="0">
+                    <div class="field-value">0°</div>
+                </div>
+            </div>
+
+            <!-- 外观属性 -->
+            <div class="properties-section">
+                <div class="properties-title">外观</div>
+                <div class="property-group">
+                    <div class="property-label">不透明度</div>
+                    <input type="range" class="field-slider" min="0" max="100" value="100">
+                    <div class="field-value">100%</div>
+                </div>
+                <div class="property-group">
+                    <div class="property-label">混合模式</div>
+                    <select class="property-input">
+                        <option>正常</option>
+                        <option>叠加</option>
+                        <option>柔光</option>
+                        <option>强光</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- AI生成面板 -->
+            <div class="ai-panel">
+                <div class="ai-title">
+                    <span>🤖</span>
+                    <span>AI智能生成</span>
+                </div>
+                <textarea class="ai-prompt" placeholder="描述您想要的效果，例如：\n- 添加电影级调色\n- 生成动态背景\n- 创建文字动画\n- 智能场景转换"></textarea>
+                <button class="ai-generate-btn" onclick="generateAIEffect()">🚀 生成效果</button>
+                
+                <div class="ai-suggestions">
+                    <div class="suggestion-item" onclick="applyPreset('cinematic')">🎬 电影级调色</div>
+                    <div class="suggestion-item" onclick="applyPreset('vintage')">📸 复古滤镜</div>
+                    <div class="suggestion-item" onclick="applyPreset('motion')">🌊 动态模糊</div>
+                    <div class="suggestion-item" onclick="applyPreset('glow')">✨ 发光效果</div>
+                </div>
+            </div>
+
+            <!-- Token预算 -->
+            <div class="token-budget">
+                <div class="budget-header">
+                    <div class="budget-title">Token预算</div>
+                    <div class="budget-value">2,400 / 53,000</div>
+                </div>
+                <div class="budget-bar">
+                    <div class="budget-fill" style="width: 4.5%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 编辑器状态管理
+        class VideoEditor {
+            constructor() {
+                this.canvas = document.getElementById('mainCanvas');
+                this.timeline = document.getElementById('timelineTrack');
+                this.selectedElement = null;
+                this.mediaElements = [];
+                this.isPlaying = false;
+                this.currentTime = 0;
+                this.totalDuration = 10;
+                this.tokenBudget = {
+                    total: 53000,
+                    used: 2400,
+                    operations: {
+                        'ai-enhance': 800,
+                        'ai-style': 1200,
+                        'ai-motion': 400
+                    }
+                };
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.setupDragAndDrop();
+                this.updateTokenDisplay();
+                this.initializeSliders();
+            }
+
+            bindEvents() {
+                // 工具选择
+                document.querySelectorAll('.tool-item').forEach(tool => {
+                    tool.addEventListener('click', (e) => {
+                        this.selectTool(tool.dataset.tool);
+                    });
+                });
+
+                // 画布点击
+                this.canvas.addEventListener('click', (e) => {
+                    this.handleCanvasClick(e);
+                });
+
+                // 时间轴拖拽
+                this.timeline.addEventListener('click', (e) => {
+                    this.seekToPosition(e);
+                });
+            }
+
+            setupDragAndDrop() {
+                const canvasContainer = document.getElementById('canvasContainer');
+                
+                canvasContainer.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    canvasContainer.classList.add('drop-zone');
+                });
+
+                canvasContainer.addEventListener('dragleave', (e) => {
+                    canvasContainer.classList.remove('drop-zone');
+                });
+
+                canvasContainer.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    canvasContainer.classList.remove('drop-zone');
+                    this.handleFileDrop(e);
+                });
+            }
+
+            selectTool(toolName) {
+                // 更新工具选择状态
+                document.querySelectorAll('.tool-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector(`[data-tool="${toolName}"]`).classList.add('active');
+
+                console.log(`选择工具: ${toolName}`);
+                this.currentTool = toolName;
+            }
+
+            handleCanvasClick(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                console.log(`画布点击位置: (${x}, ${y})`);
+                
+                // 如果是文字工具，添加文字元素
+                if (this.currentTool === 'text') {
+                    this.addTextElement(x, y);
+                }
+            }
+
+            handleFileDrop(e) {
+                const files = Array.from(e.dataTransfer.files);
+                files.forEach(file => {
+                    if (this.isValidMediaFile(file)) {
+                        this.addMediaElement(file);
+                    }
+                });
+            }
+
+            isValidMediaFile(file) {
+                const validTypes = ['image/jpeg', 'image/png', 'video/mp4', 'video/quicktime'];
+                return validTypes.includes(file.type);
+            }
+
+            addMediaElement(file) {
+                const overlay = document.getElementById('canvasOverlay');
+                overlay.style.display = 'none';
+
+                const element = {
+                    id: Date.now(),
+                    type: file.type.startsWith('image/') ? 'image' : 'video',
+                    file: file,
+                    x: 50,
+                    y: 50,
+                    width: 200,
+                    height: 150,
+                    rotation: 0,
+                    opacity: 100
+                };
+
+                this.mediaElements.push(element);
+                this.renderElement(element);
+                this.addToTimeline(element);
+                
+                console.log('添加媒体元素:', element);
+            }
+
+            addTextElement(x, y) {
+                const element = {
+                    id: Date.now(),
+                    type: 'text',
+                    content: '双击编辑文字',
+                    x: x - 50,
+                    y: y - 20,
+                    width: 100,
+                    height: 40,
+                    fontSize: 24,
+                    color: '#FFFFFF',
+                    fontFamily: 'Arial'
+                };
+
+                this.mediaElements.push(element);
+                this.renderElement(element);
+                this.addToTimeline(element);
+            }
+
+            renderElement(element) {
+                const div = document.createElement('div');
+                div.className = 'media-element';
+                div.dataset.elementId = element.id;
+                div.style.left = element.x + 'px';
+                div.style.top = element.y + 'px';
+                div.style.width = element.width + 'px';
+                div.style.height = element.height + 'px';
+                div.style.transform = `rotate(${element.rotation}deg)`;
+                div.style.opacity = element.opacity / 100;
+
+                if (element.type === 'text') {
+                    div.innerHTML = element.content;
+                    div.style.color = element.color;
+                    div.style.fontSize = element.fontSize + 'px';
+                    div.style.fontFamily = element.fontFamily;
+                    div.style.display = 'flex';
+                    div.style.alignItems = 'center';
+                    div.style.justifyContent = 'center';
+                    div.style.textAlign = 'center';
+                } else {
+                    div.innerHTML = `<div style="width: 100%; height: 100%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 12px; color: white;">${element.type.toUpperCase()}</div>`;
+                }
+
+                // 添加调整手柄
+                ['top-left', 'top-right', 'bottom-left', 'bottom-right'].forEach(position => {
+                    const handle = document.createElement('div');
+                    handle.className = `resize-handle ${position}`;
+                    div.appendChild(handle);
+                });
+
+                div.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.selectElement(element.id);
+                });
+
+                this.canvas.appendChild(div);
+            }
+
+            selectElement(elementId) {
+                // 移除之前的选择状态
+                document.querySelectorAll('.media-element').forEach(el => {
+                    el.classList.remove('selected');
+                });
+
+                // 选择新元素
+                const element = document.querySelector(`[data-element-id="${elementId}"]`);
+                if (element) {
+                    element.classList.add('selected');
+                    this.selectedElement = this.mediaElements.find(el => el.id == elementId);
+                    this.updatePropertiesPanel();
+                }
+            }
+
+            updatePropertiesPanel() {
+                const subtitle = document.querySelector('.properties-panel .panel-subtitle');
+                if (this.selectedElement) {
+                    subtitle.textContent = `当前选中: ${this.selectedElement.type.toUpperCase()}`;
+                } else {
+                    subtitle.textContent = '当前选中: 无';
+                }
+            }
+
+            addToTimeline(element) {
+                const clip = document.createElement('div');
+                clip.className = 'timeline-clip';
+                clip.style.left = (this.mediaElements.length * 160) + 'px';
+                clip.style.width = '150px';
+                clip.textContent = `${element.type} ${this.mediaElements.length}`;
+                clip.dataset.elementId = element.id;
+                
+                clip.addEventListener('click', (e) => {
+                    this.selectElement(element.id);
+                });
+
+                this.timeline.appendChild(clip);
+            }
+
+            seekToPosition(e) {
+                const rect = this.timeline.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percentage = x / rect.width;
+                this.currentTime = percentage * this.totalDuration;
+                
+                const playhead = document.getElementById('playhead');
+                playhead.style.left = x + 'px';
+                
+                console.log(`跳转到时间: ${this.currentTime.toFixed(2)}s`);
+            }
+
+            initializeSliders() {
+                // 帧率滑块
+                const framerateSlider = document.getElementById('framerate');
+                const framerateValue = document.getElementById('framerateValue');
+                framerateSlider.addEventListener('input', (e) => {
+                    framerateValue.textContent = e.target.value;
+                });
+
+                // 质量滑块
+                const qualitySlider = document.getElementById('quality');
+                const qualityValue = document.getElementById('qualityValue');
+                qualitySlider.addEventListener('input', (e) => {
+                    qualityValue.textContent = e.target.value;
+                });
+            }
+
+            updateTokenDisplay() {
+                const budgetValue = document.querySelector('.budget-value');
+                const budgetFill = document.querySelector('.budget-fill');
+                
+                budgetValue.textContent = `${this.tokenBudget.used.toLocaleString()} / ${this.tokenBudget.total.toLocaleString()}`;
+                
+                const percentage = (this.tokenBudget.used / this.tokenBudget.total) * 100;
+                budgetFill.style.width = percentage + '%';
+            }
+
+            consumeTokens(operation, amount) {
+                this.tokenBudget.used += amount;
+                this.tokenBudget.operations[operation] = (this.tokenBudget.operations[operation] || 0) + amount;
+                this.updateTokenDisplay();
+                
+                console.log(`Token消耗: ${operation} - ${amount}T`);
+            }
+        }
+
+        // 全局控制函数
+        function saveProject() {
+            console.log('保存项目');
+            alert('项目已保存到本地存储');
+        }
+
+        function exportVideo() {
+            console.log('导出视频');
+            editor.consumeTokens('export', 500);
+            alert('视频导出中，请稍候...');
+        }
+
+        function previewVideo() {
+            console.log('预览视频');
+            editor.isPlaying = !editor.isPlaying;
+            const btn = event.target;
+            btn.textContent = editor.isPlaying ? '⏸️ 暂停' : '▶️ 预览';
+        }
+
+        function playPause() {
+            editor.isPlaying = !editor.isPlaying;
+            const btn = event.target;
+            btn.textContent = editor.isPlaying ? '⏸️' : '▶️';
+            console.log(editor.isPlaying ? '播放' : '暂停');
+        }
+
+        function stopPlayback() {
+            editor.isPlaying = false;
+            editor.currentTime = 0;
+            document.querySelector('.timeline-controls button').textContent = '▶️';
+            document.getElementById('playhead').style.left = '0px';
+            console.log('停止播放');
+        }
+
+        function undo() {
+            console.log('撤销操作');
+        }
+
+        function redo() {
+            console.log('重做操作');
+        }
+
+        function fitToScreen() {
+            console.log('缩放适应屏幕');
+        }
+
+        function toggleGrid() {
+            console.log('切换网格显示');
+            event.target.classList.toggle('active');
+        }
+
+        function toggleRuler() {
+            console.log('切换标尺显示');
+            event.target.classList.toggle('active');
+        }
+
+        function toggleSnap() {
+            console.log('切换对齐功能');
+            event.target.classList.toggle('active');
+        }
+
+        function generateAIEffect() {
+            const prompt = document.querySelector('.ai-prompt').value;
+            if (!prompt.trim()) {
+                alert('请输入效果描述');
+                return;
+            }
+            
+            console.log('生成AI效果:', prompt);
+            editor.consumeTokens('ai-generate', 1200);
+            
+            // 模拟AI生成过程
+            const btn = event.target;
+            btn.textContent = '🔄 生成中...';
+            btn.classList.add('processing');
+            
+            setTimeout(() => {
+                btn.textContent = '🚀 生成效果';
+                btn.classList.remove('processing');
+                alert('AI效果生成完成！');
+            }, 3000);
+        }
+
+        function applyPreset(presetType) {
+            console.log('应用预设效果:', presetType);
+            editor.consumeTokens('preset', 300);
+            
+            const effects = {
+                'cinematic': '电影级调色已应用',
+                'vintage': '复古滤镜已应用',
+                'motion': '动态模糊已应用',
+                'glow': '发光效果已应用'
+            };
+            
+            alert(effects[presetType] || '效果已应用');
+        }
+
+        // 初始化编辑器
+        let editor;
+        document.addEventListener('DOMContentLoaded', () => {
+            editor = new VideoEditor();
+            
+            // 添加页面加载动画
+            document.querySelectorAll('.tool-item, .property-group, .timeline-clip').forEach((item, index) => {
+                item.style.animationDelay = (index * 0.05) + 's';
+                item.classList.add('fade-in');
+            });
+            
+            console.log('AIRVIO AI智能图片剪辑编辑器已启动');
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 's':
+                        e.preventDefault();
+                        saveProject();
+                        break;
+                    case 'z':
+                        e.preventDefault();
+                        if (e.shiftKey) {
+                            redo();
+                        } else {
+                            undo();
+                        }
+                        break;
+                    case ' ':
+                        e.preventDefault();
+                        playPause();
+                        break;
+                }
+            }
+            
+            // Delete键删除选中元素
+            if (e.key === 'Delete' && editor.selectedElement) {
+                const elementDiv = document.querySelector(`[data-element-id="${editor.selectedElement.id}"]`);
+                if (elementDiv) {
+                    elementDiv.remove();
+                    editor.mediaElements = editor.mediaElements.filter(el => el.id !== editor.selectedElement.id);
+                    editor.selectedElement = null;
+                    editor.updatePropertiesPanel();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

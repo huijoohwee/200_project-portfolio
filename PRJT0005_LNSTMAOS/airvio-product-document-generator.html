@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRVIO - Product Document Generator</title>
+    <style>
+        /* MacOS风格变量 */
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --error-color: #FF3B30;
+            --background-color: #F2F2F7;
+            --surface-color: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: #C6C6C8;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056CC;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--background-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            margin-top: 60px;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        /* 左侧配置面板 */
+        .sidebar {
+            width: 350px;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .config-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            transition: var(--transition);
+            background: var(--surface-color);
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .checkbox-item {
+            padding: 6px 12px;
+            background: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .checkbox-item:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .checkbox-item.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 主内容区域 */
+        .content-area {
+            flex: 1;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .content-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .progress-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 120px;
+            height: 6px;
+            background: var(--background-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.3s ease;
+        }
+
+        .document-preview {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--background-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 文档样式 */
+        .document {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .document-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .document-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .document-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .document-content {
+            padding: 30px;
+        }
+
+        .doc-section {
+            margin-bottom: 32px;
+        }
+
+        .doc-section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .doc-section-content {
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: var(--background-color);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 16px 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .feature-list li::before {
+            content: "✓";
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        /* Token预算控制面板 */
+        .token-budget-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 280px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .token-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .token-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+
+        .token-item:last-child {
+            border-bottom: none;
+        }
+
+        .token-total {
+            background: var(--background-color);
+            font-weight: 600;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 300px;
+            }
+            
+            .token-budget-panel {
+                position: relative;
+                bottom: auto;
+                right: auto;
+                width: 100%;
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="logo">PD</div>
+            <div>
+                <div class="brand-text">AIRVIO Product Document</div>
+                <div class="subtitle">智能产品文档生成器</div>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-secondary" onclick="exportDocument()">📄 导出文档</button>
+            <button class="btn btn-primary" onclick="generateDocument()">🚀 生成文档</button>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧配置面板 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">配置参数</div>
+                <div class="sidebar-subtitle">基于AIRVIO动态字段系统</div>
+            </div>
+
+            <!-- 基础信息 -->
+            <div class="config-section">
+                <div class="section-title">📋 基础信息</div>
+                <div class="form-group">
+                    <label class="form-label">产品名称</label>
+                    <input type="text" class="form-input" id="productName" placeholder="输入您的产品名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">创业阶段</label>
+                    <select class="form-select" id="startupPhase">
+                        <option value="discovery">发现阶段 (Discovery)</option>
+                        <option value="validation">验证阶段 (Validation)</option>
+                        <option value="development">开发阶段 (Development)</option>
+                        <option value="launch">启动阶段 (Launch)</option>
+                        <option value="fundraising">融资阶段 (Fundraising)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">产品描述</label>
+                    <textarea class="form-textarea" id="productDescription" placeholder="简要描述您的产品功能和价值"></textarea>
+                </div>
+            </div>
+
+            <!-- 价值链配置 -->
+            <div class="config-section">
+                <div class="section-title">🎯 价值链配置</div>
+                <div class="form-group">
+                    <label class="form-label">目标用户</label>
+                    <input type="text" class="form-input" id="targetUsers" placeholder="描述您的目标用户群体">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">核心痛点</label>
+                    <textarea class="form-textarea" id="corePainPoints" placeholder="用户面临的主要问题"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">解决方案</label>
+                    <textarea class="form-textarea" id="solution" placeholder="您的产品如何解决这些问题"></textarea>
+                </div>
+            </div>
+
+            <!-- Token预算配置 -->
+            <div class="config-section">
+                <div class="section-title">💰 Token预算</div>
+                <div class="form-group">
+                    <label class="form-label">总预算</label>
+                    <input type="number" class="form-input" id="totalBudget" value="53000" min="30000" max="100000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">效率目标</label>
+                    <input type="number" class="form-input" id="efficiencyTarget" value="85" min="70" max="95" step="5">
+                    <small style="color: var(--text-secondary); font-size: 12px;">目标效率 (%)</small>
+                </div>
+            </div>
+
+            <!-- 技术标签 -->
+            <div class="config-section">
+                <div class="section-title">🏷️ 技术标签</div>
+                <div class="checkbox-group">
+                    <div class="checkbox-item" data-tag="ai-native">AI原生</div>
+                    <div class="checkbox-item" data-tag="cloud-native">云原生</div>
+                    <div class="checkbox-item" data-tag="mvp">MVP</div>
+                    <div class="checkbox-item" data-tag="lean-startup">精益创业</div>
+                    <div class="checkbox-item" data-tag="quick-launch">快速启动</div>
+                    <div class="checkbox-item" data-tag="DRY">DRY原则</div>
+                    <div class="checkbox-item" data-tag="SOLID">SOLID原则</div>
+                    <div class="checkbox-item" data-tag="multi-agent">多智能体</div>
+                    <div class="checkbox-item" data-tag="human-ai-collaboration">人机协作</div>
+                    <div class="checkbox-item" data-tag="token-economy">Token经济</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="content-area">
+            <div class="content-header">
+                <div class="content-title">Product Document 预览</div>
+                <div class="progress-indicator">
+                    <span>生成进度</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <span id="progressText">0%</span>
+                </div>
+            </div>
+
+            <div class="document-preview" id="documentPreview">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    点击"生成文档"开始创建您的Product Document
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Token预算控制面板 -->
+    <div class="token-budget-panel">
+        <div class="token-header">💰 Token预算监控</div>
+        <div class="token-item">
+            <span>文档生成</span>
+            <span id="docGenerationTokens">12,500</span>
+        </div>
+        <div class="token-item">
+            <span>内容优化</span>
+            <span id="contentOptTokens">8,200</span>
+        </div>
+        <div class="token-item">
+            <span>格式渲染</span>
+            <span id="formatTokens">3,800</span>
+        </div>
+        <div class="token-item">
+            <span>质量检查</span>
+            <span id="qualityTokens">2,100</span>
+        </div>
+        <div class="token-item token-total">
+            <span>总使用</span>
+            <span id="totalTokens">26,600 / 53,000</span>
+        </div>
+    </div>
+
+    <script>
+        // 动态字段配置数据
+        const dynamicFields = {
+            TOKEN_BUDGET_TOTAL: {
+                "zh-CN": "总Token预算",
+                "en-US": "Total Token Budget",
+                "description": "完整创业周期的Token总预算",
+                "type": "token_budget",
+                "priority": "P0",
+                "example": "53000",
+                "efficiency_target": 0.85
+            },
+            VALUE_CAUSAL_CHAIN: {
+                "zh-CN": "价值因果链",
+                "en-US": "Value Causal Chain",
+                "description": "基于(条件)→通过[方案]→实现{价值}语义格式",
+                "type": "object",
+                "priority": "P0"
+            },
+            LEAN_STARTUP_CYCLE: {
+                "zh-CN": "精益创业循环",
+                "en-US": "Lean Startup Cycle",
+                "description": "构建-测量-学习的核心循环机制",
+                "type": "object",
+                "priority": "P0"
+            },
+            MVP_DELIVERY_TIME: {
+                "zh-CN": "MVP交付时间",
+                "en-US": "MVP Delivery Time",
+                "description": "从启动到MVP上线的目标时间",
+                "type": "timeline",
+                "example": "24小时"
+            }
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTagSelection();
+            updateTokenBudget();
+        });
+
+        // 标签选择功能
+        function initializeTagSelection() {
+            const checkboxItems = document.querySelectorAll('.checkbox-item');
+            checkboxItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    updateTokenBudget();
+                });
+            });
+        }
+
+        // 更新Token预算
+        function updateTokenBudget() {
+            const totalBudget = parseInt(document.getElementById('totalBudget').value) || 53000;
+            const selectedTags = document.querySelectorAll('.checkbox-item.active').length;
+            
+            // 根据选择的标签动态计算Token分配
+            const docTokens = Math.floor(totalBudget * 0.35);
+            const contentTokens = Math.floor(totalBudget * 0.25);
+            const formatTokens = Math.floor(totalBudget * 0.15);
+            const qualityTokens = Math.floor(totalBudget * 0.10);
+            const usedTokens = docTokens + contentTokens + formatTokens + qualityTokens;
+            
+            document.getElementById('docGenerationTokens').textContent = docTokens.toLocaleString();
+            document.getElementById('contentOptTokens').textContent = contentTokens.toLocaleString();
+            document.getElementById('formatTokens').textContent = formatTokens.toLocaleString();
+            document.getElementById('qualityTokens').textContent = qualityTokens.toLocaleString();
+            document.getElementById('totalTokens').textContent = `${usedTokens.toLocaleString()} / ${totalBudget.toLocaleString()}`;
+        }
+
+        // 生成文档
+        function generateDocument() {
+            const productName = document.getElementById('productName').value || '示例产品';
+            const startupPhase = document.getElementById('startupPhase').value;
+            const productDescription = document.getElementById('productDescription').value || '基于AI技术的创新产品解决方案';
+            const targetUsers = document.getElementById('targetUsers').value || '中小企业和个人开发者';
+            const corePainPoints = document.getElementById('corePainPoints').value || '传统开发流程复杂，成本高昂，周期长';
+            const solution = document.getElementById('solution').value || '通过AI智能化工具链，实现快速原型开发和验证';
+            const selectedTags = Array.from(document.querySelectorAll('.checkbox-item.active')).map(item => item.dataset.tag);
+            
+            // 显示进度
+            showProgress();
+            
+            // 模拟生成过程
+            setTimeout(() => {
+                const documentHTML = generateDocumentHTML({
+                    productName,
+                    startupPhase,
+                    productDescription,
+                    targetUsers,
+                    corePainPoints,
+                    solution,
+                    selectedTags
+                });
+                
+                document.getElementById('documentPreview').innerHTML = documentHTML;
+                document.getElementById('progressFill').style.width = '100%';
+                document.getElementById('progressText').textContent = '100%';
+            }, 2000);
+        }
+
+        // 显示生成进度
+        function showProgress() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 95) {
+                    progress = 95;
+                    clearInterval(interval);
+                }
+                document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('progressText').textContent = Math.round(progress) + '%';
+            }, 200);
+        }
+
+        // 生成文档HTML
+        function generateDocumentHTML(data) {
+            const phaseNames = {
+                'discovery': '发现阶段',
+                'validation': '验证阶段', 
+                'development': '开发阶段',
+                'launch': '启动阶段',
+                'fundraising': '融资阶段'
+            };
+            
+            const tagNames = {
+                'ai-native': 'AI原生',
+                'cloud-native': '云原生',
+                'mvp': 'MVP',
+                'lean-startup': '精益创业',
+                'quick-launch': '快速启动',
+                'DRY': 'DRY原则',
+                'SOLID': 'SOLID原则',
+                'multi-agent': '多智能体',
+                'human-ai-collaboration': '人机协作',
+                'token-economy': 'Token经济'
+            };
+            
+            return `
+                <div class="document">
+                    <div class="document-header">
+                        <div class="document-title">${data.productName}</div>
+                        <div class="document-subtitle">Product Document - ${phaseNames[data.startupPhase]}</div>
+                    </div>
+                    
+                    <div class="document-content">
+                        <!-- 产品概述 -->
+                        <div class="doc-section">
+                            <div class="doc-section-title">📋 产品概述</div>
+                            <div class="doc-section-content">
+                                <p><strong>产品描述：</strong>${data.productDescription}</p>
+                                <p><strong>目标用户：</strong>${data.targetUsers}</p>
+                                <p><strong>当前阶段：</strong>${phaseNames[data.startupPhase]}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 价值主张 -->
+                        <div class="doc-section">
+                            <div class="doc-section-title">🎯 价值主张</div>
+                            <div class="doc-section-content">
+                                <p><strong>核心痛点：</strong></p>
+                                <p>${data.corePainPoints}</p>
+                                <p><strong>解决方案：</strong></p>
+                                <p>${data.solution}</p>
+                                <p><strong>价值因果链：</strong></p>
+                                <p>基于(${data.corePainPoints.substring(0, 20)}...)→通过[${data.solution.substring(0, 20)}...]→实现{用户价值最大化}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 技术架构 -->
+                        <div class="doc-section">
+                            <div class="doc-section-title">🏗️ 技术架构</div>
+                            <div class="doc-section-content">
+                                <p>基于选定的技术标签构建产品架构：</p>
+                                <div class="checkbox-group">
+                                    ${data.selectedTags.map(tag => `<div class="checkbox-item active">${tagNames[tag] || tag}</div>`).join('')}
+                                </div>
+                                <p style="margin-top: 16px;">核心技术特性：</p>
+                                <ul class="feature-list">
+                                    <li>AI原生架构，支持多智能体协作</li>
+                                    <li>Token经济模型，实现成本透明化</li>
+                                    <li>快速启动能力，24小时MVP交付</li>
+                                    <li>人机协作优化，自动化率≥90%</li>
+                                    <li>精益创业循环，持续迭代优化</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- 关键指标 -->
+                        <div class="doc-section">
+                            <div class="doc-section-title">📊 关键指标</div>
+                            <div class="doc-section-content">
+                                <div class="metric-grid">
+                                    <div class="metric-card">
+                                        <div class="metric-value">24小时</div>
+                                        <div class="metric-label">MVP交付时间</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">≥85%</div>
+                                        <div class="metric-label">Token使用效率</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">≥90%</div>
+                                        <div class="metric-label">自动化率</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">≥95%</div>
+                                        <div class="metric-label">MVP存活率</div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 16px;">
+                                    <div class="metric-description">基于AIRVIO动态字段验证的关键性能指标</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 发展路线图 -->
+                        <div class="doc-section">
+                            <div class="doc-section-title">🗺️ 发展路线图</div>
+                            <div class="doc-section-content">
+                                <p><strong>短期目标（1-3个月）：</strong></p>
+                                <ul class="feature-list">
+                                    <li>完成MVP开发和用户测试</li>
+                                    <li>验证核心价值假设</li>
+                                    <li>建立基础用户群体</li>
+                                </ul>
+                                <p><strong>中期目标（3-12个月）：</strong></p>
+                                <ul class="feature-list">
+                                    <li>产品功能完善和优化</li>
+                                    <li>扩大市场覆盖范围</li>
+                                    <li>建立商业化模式</li>
+                                </ul>
+                                <p><strong>长期目标（1-3年）：</strong></p>
+                                <ul class="feature-list">
+                                    <li>实现规模化增长</li>
+                                    <li>建立行业领先地位</li>
+                                    <li>探索新的业务机会</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Token经济模型 -->
+                        <div class="doc-section">
+                            <div class="doc-section-title">💰 Token经济模型</div>
+                            <div class="doc-section-content">
+                                <p><strong>预算分配策略：</strong></p>
+                                <div class="metric-grid">
+                                    <div class="metric-card">
+                                        <div class="metric-value">35%</div>
+                                        <div class="metric-label">文档生成</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">25%</div>
+                                        <div class="metric-label">内容优化</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">15%</div>
+                                        <div class="metric-label">格式渲染</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">10%</div>
+                                        <div class="metric-label">质量检查</div>
+                                    </div>
+                                </div>
+                                <p style="margin-top: 16px;"><strong>优化策略：</strong>模板复用 + 缓存优化 + 智能分配</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 导出文档
+        function exportDocument() {
+            const documentContent = document.getElementById('documentPreview').innerHTML;
+            if (documentContent.includes('loading')) {
+                alert('请先生成文档后再导出');
+                return;
+            }
+            
+            const blob = new Blob([`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Product Document</title>
+                    <style>
+                        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 40px; }
+                        .document { max-width: 800px; margin: 0 auto; }
+                        .document-header { background: linear-gradient(135deg, #007AFF, #5856D6); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+                        .document-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+                        .document-subtitle { font-size: 16px; opacity: 0.9; }
+                        .document-content { padding: 30px; border: 1px solid #C6C6C8; border-top: none; border-radius: 0 0 8px 8px; }
+                        .doc-section { margin-bottom: 32px; }
+                        .doc-section-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #007AFF; }
+                        .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0; }
+                        .metric-card { background: #F2F2F7; padding: 16px; border-radius: 8px; text-align: center; }
+                        .metric-value { font-size: 24px; font-weight: 700; color: #007AFF; margin-bottom: 4px; }
+                        .metric-label { font-size: 12px; color: #8E8E93; }
+                        .feature-list { list-style: none; margin: 16px 0; }
+                        .feature-list li { padding: 8px 0; }
+                        .feature-list li::before { content: "✓"; color: #34C759; font-weight: bold; margin-right: 8px; }
+                        .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+                        .checkbox-item { padding: 6px 12px; background: #007AFF; color: white; border-radius: 16px; font-size: 12px; }
+                    </style>
+                </head>
+                <body>
+                    ${documentContent}
+                </body>
+                </html>
+            `], { type: 'text/html' });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'product-document.html';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // 监听输入变化，实时更新Token预算
+        document.getElementById('totalBudget').addEventListener('input', updateTokenBudget);
+    </script>
+</body>
+</html>

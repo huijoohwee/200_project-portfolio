@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRVIO - Business Plan 生成器</title>
+    <style>
+        /* MacOS风格变量 */
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --error-color: #FF3B30;
+            --background-color: #F2F2F7;
+            --surface-color: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: #C6C6C8;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056CC;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--background-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            margin-top: 60px;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        /* 左侧配置面板 */
+        .sidebar {
+            width: 350px;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .config-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .checkbox-item:hover {
+            background: var(--border-color);
+        }
+
+        .checkbox-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 主内容区域 */
+        .content-area {
+            flex: 1;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .progress-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 4px;
+            background: var(--background-color);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.3s ease;
+        }
+
+        /* Business Plan 内容 */
+        .business-plan {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .plan-section {
+            margin-bottom: 32px;
+            padding: 24px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        .plan-section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .plan-section-content {
+            line-height: 1.6;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .metric-card {
+            padding: 16px;
+            background: white;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .metric-description {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 6px;
+            width: 8px;
+            height: 8px;
+            background: var(--primary-color);
+            border-radius: 50%;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .timeline-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 300px;
+            }
+            
+            .metric-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 动画效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .plan-section {
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="logo">BP</div>
+            <div>
+                <div class="brand-text">AIRVIO Business Plan</div>
+                <div class="subtitle">智能商业计划书生成器</div>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-secondary" onclick="exportPlan()">📄 导出PDF</button>
+            <button class="btn btn-primary" onclick="generatePlan()">🚀 生成计划书</button>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧配置面板 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">配置参数</div>
+                <div class="sidebar-subtitle">基于AIRVIO动态字段系统</div>
+            </div>
+
+            <!-- 基础信息 -->
+            <div class="config-section">
+                <div class="section-title">📋 基础信息</div>
+                <div class="form-group">
+                    <label class="form-label">项目名称</label>
+                    <input type="text" class="form-input" id="projectName" placeholder="输入您的项目名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">创业阶段</label>
+                    <select class="form-select" id="startupPhase">
+                        <option value="discovery">发现阶段 (Discovery)</option>
+                        <option value="validation">验证阶段 (Validation)</option>
+                        <option value="development">开发阶段 (Development)</option>
+                        <option value="launch">发布阶段 (Launch)</option>
+                        <option value="fundraising">融资阶段 (Fundraising)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">MVP交付时间</label>
+                    <input type="text" class="form-input" id="mvpDeliveryTime" value="24小时" placeholder="24小时">
+                </div>
+            </div>
+
+            <!-- Token预算配置 -->
+            <div class="config-section">
+                <div class="section-title">💰 Token预算</div>
+                <div class="form-group">
+                    <label class="form-label">总Token预算</label>
+                    <input type="number" class="form-input" id="totalTokenBudget" value="53000" placeholder="53000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">效率目标</label>
+                    <input type="text" class="form-input" id="efficiencyTarget" value="≥85%" placeholder="≥85%">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">优化策略</label>
+                    <input type="text" class="form-input" id="optimizationStrategy" value="模板复用+缓存优化" placeholder="模板复用+缓存优化">
+                </div>
+            </div>
+
+            <!-- 商业影响 -->
+            <div class="config-section">
+                <div class="section-title">📈 商业影响</div>
+                <div class="form-group">
+                    <label class="form-label">用户价值</label>
+                    <input type="text" class="form-input" id="userValue" value="降低创业成本90%" placeholder="降低创业成本90%">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">商业价值</label>
+                    <input type="text" class="form-input" id="businessValue" value="提升MVP成功率3x" placeholder="提升MVP成功率3x">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">ROI估算</label>
+                    <input type="text" class="form-input" id="roiEstimate" value="300%+" placeholder="300%+">
+                </div>
+            </div>
+
+            <!-- 关键标签 -->
+            <div class="config-section">
+                <div class="section-title">🏷️ 关键标签</div>
+                <div class="checkbox-group" id="tagSelection">
+                    <div class="checkbox-item active" data-tag="token-economy">Token经济</div>
+                    <div class="checkbox-item active" data-tag="mvp">MVP</div>
+                    <div class="checkbox-item" data-tag="ai-native">AI原生</div>
+                    <div class="checkbox-item" data-tag="quick-launch">快速启动</div>
+                    <div class="checkbox-item" data-tag="DRY">DRY原则</div>
+                    <div class="checkbox-item" data-tag="SOLID">SOLID原则</div>
+                    <div class="checkbox-item" data-tag="multi-agent">多智能体</div>
+                    <div class="checkbox-item" data-tag="human-ai-collaboration">人机协作</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="content-area">
+            <div class="content-header">
+                <div class="content-title">Business Plan 预览</div>
+                <div class="progress-indicator">
+                    <span>生成进度</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <span id="progressText">0%</span>
+                </div>
+            </div>
+
+            <div class="business-plan" id="businessPlan">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    点击"生成计划书"开始创建您的Business Plan
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 动态字段配置数据
+        const dynamicFields = {
+            TOKEN_BUDGET_TOTAL: {
+                "zh-CN": "总Token预算",
+                "en-US": "Total Token Budget",
+                description: "完整创业周期的Token总预算",
+                example: 53000,
+                business_impact: {
+                    user_value: "降低创业成本90%",
+                    business_value: "提升MVP成功率3x",
+                    roi_estimate: "300%+"
+                }
+            },
+            MVP_DELIVERY_TIME: {
+                "zh-CN": "MVP交付时间",
+                "en-US": "MVP Delivery Time",
+                description: "从启动到MVP上线的目标时间",
+                example: "24小时",
+                business_impact: {
+                    user_value: "极速验证想法",
+                    business_value: "抢占时间窗口",
+                    roi_estimate: "时间成本节省80%"
+                }
+            },
+            LEAN_STARTUP_CYCLE: {
+                "zh-CN": "精益创业周期",
+                description: "五阶段价值链的完整创业周期",
+                discovery_chain: {
+                    expression: "基于(市场痛点)→通过[客户访谈+问题验证]→实现{PMF假设}",
+                    token_budget: 3000,
+                    investor_value: "问题验证率≥80%"
+                },
+                validation_chain: {
+                    expression: "基于(PMF假设)→通过[MVP构建+用户测试]→实现{产品验证}",
+                    token_budget: 4000,
+                    investor_value: "用户满意度≥85%"
+                },
+                development_chain: {
+                    expression: "基于(产品验证)→通过[功能开发+系统优化]→实现{产品就绪}",
+                    token_budget: 5000,
+                    investor_value: "系统稳定性≥99%"
+                },
+                launch_chain: {
+                    expression: "基于(产品就绪)→通过[市场推广+用户获取]→实现{市场牵引}",
+                    token_budget: 3000,
+                    investor_value: "用户增长率≥20%/月"
+                },
+                fundraising_chain: {
+                    expression: "基于(市场牵引)→通过[数据包装+路演材料]→实现{融资成功}",
+                    token_budget: 8000,
+                    investor_value: "融资成功率≥70%"
+                }
+            },
+            INVESTOR_READINESS_SCORE: {
+                "zh-CN": "投资者准备度评分",
+                description: "基于五维度的投资者准备度综合评分",
+                example: {
+                    market_validation: "90%",
+                    product_readiness: "85%",
+                    team_capability: "95%",
+                    financial_model: "80%",
+                    growth_potential: "88%",
+                    overall_score: "87.6%"
+                }
+            }
+        };
+
+        // 标签选择功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const tagItems = document.querySelectorAll('.checkbox-item');
+            tagItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                });
+            });
+        });
+
+        // 生成Business Plan
+        function generatePlan() {
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const businessPlan = document.getElementById('businessPlan');
+            
+            // 显示加载状态
+            businessPlan.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    正在生成Business Plan...
+                </div>
+            `;
+            
+            // 模拟进度条
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress > 100) progress = 100;
+                
+                progressFill.style.width = progress + '%';
+                progressText.textContent = Math.round(progress) + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    renderBusinessPlan();
+                }
+            }, 200);
+        }
+
+        // 渲染Business Plan内容
+        function renderBusinessPlan() {
+            const projectName = document.getElementById('projectName').value || '智能创业项目';
+            const startupPhase = document.getElementById('startupPhase').value;
+            const mvpDeliveryTime = document.getElementById('mvpDeliveryTime').value;
+            const totalTokenBudget = document.getElementById('totalTokenBudget').value;
+            const userValue = document.getElementById('userValue').value;
+            const businessValue = document.getElementById('businessValue').value;
+            const roiEstimate = document.getElementById('roiEstimate').value;
+            
+            const selectedTags = Array.from(document.querySelectorAll('.checkbox-item.active'))
+                .map(item => item.dataset.tag);
+            
+            const businessPlan = document.getElementById('businessPlan');
+            
+            businessPlan.innerHTML = `
+                <!-- 执行摘要 -->
+                <div class="plan-section">
+                    <div class="plan-section-title">📋 执行摘要</div>
+                    <div class="plan-section-content">
+                        <p><strong>${projectName}</strong> 是一个基于AIRVIO动态字段系统的创新项目，目前处于<strong>${getPhaseText(startupPhase)}</strong>阶段。</p>
+                        <p>我们的核心价值主张是：<strong>${userValue}</strong>，通过AI原生架构实现<strong>${businessValue}</strong>，预期ROI达到<strong>${roiEstimate}</strong>。</p>
+                        <p>项目采用精益创业方法论，计划在<strong>${mvpDeliveryTime}</strong>内完成MVP交付，总Token预算为<strong>${totalTokenBudget.toLocaleString()}</strong>。</p>
+                    </div>
+                </div>
+
+                <!-- 市场分析 -->
+                <div class="plan-section">
+                    <div class="plan-section-title">📊 市场分析</div>
+                    <div class="plan-section-content">
+                        <p>基于AIRVIO动态字段系统的市场验证数据：</p>
+                        <div class="metric-grid">
+                            <div class="metric-card">
+                                <div class="metric-label">问题验证率</div>
+                                <div class="metric-value">≥80%</div>
+                                <div class="metric-description">通过客户访谈验证</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">用户满意度</div>
+                                <div class="metric-value">≥85%</div>
+                                <div class="metric-description">MVP用户测试结果</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">市场准备度</div>
+                                <div class="metric-value">已验证</div>
+                                <div class="metric-description">基于动态字段验证</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 产品策略 -->
+                <div class="plan-section">
+                    <div class="plan-section-title">🚀 产品策略</div>
+                    <div class="plan-section-content">
+                        <p>基于选定的技术标签构建产品架构：</p>
+                        <div class="checkbox-group">
+                            ${selectedTags.map(tag => `<div class="checkbox-item active">${getTagText(tag)}</div>`).join('')}
+                        </div>
+                        <p style="margin-top: 16px;">核心技术特性：</p>
+                        <ul style="margin-left: 20px; margin-top: 8px;">
+                            <li>AI原生架构，支持多智能体协作</li>
+                            <li>Token经济模型，实现成本透明化</li>
+                            <li>快速启动能力，24小时MVP交付</li>
+                            <li>人机协作优化，自动化率≥90%</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 发展路线图 -->
+                <div class="plan-section">
+                    <div class="plan-section-title">🗺️ 发展路线图</div>
+                    <div class="plan-section-content">
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-title">发现阶段 (Discovery)</div>
+                                <div class="timeline-description">市场痛点识别 → 客户访谈 → PMF假设 (Token预算: 3,000)</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-title">验证阶段 (Validation)</div>
+                                <div class="timeline-description">MVP构建 → 用户测试 → 产品验证 (Token预算: 4,000)</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-title">开发阶段 (Development)</div>
+                                <div class="timeline-description">功能开发 → 系统优化 → 产品就绪 (Token预算: 5,000)</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-title">发布阶段 (Launch)</div>
+                                <div class="timeline-description">市场推广 → 用户获取 → 市场牵引 (Token预算: 3,000)</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-title">融资阶段 (Fundraising)</div>
+                                <div class="timeline-description">数据包装 → 路演材料 → 融资成功 (Token预算: 8,000)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 财务预测 -->
+                <div class="plan-section">
+                    <div class="plan-section-title">💰 财务预测</div>
+                    <div class="plan-section-content">
+                        <div class="metric-grid">
+                            <div class="metric-card">
+                                <div class="metric-label">总Token预算</div>
+                                <div class="metric-value">${parseInt(totalTokenBudget).toLocaleString()}</div>
+                                <div class="metric-description">完整创业周期</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">效率目标</div>
+                                <div class="metric-value">≥85%</div>
+                                <div class="metric-description">预算使用效率</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">成本节省</div>
+                                <div class="metric-value">45%</div>
+                                <div class="metric-description">相比传统方式</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">ROI预期</div>
+                                <div class="metric-value">${roiEstimate}</div>
+                                <div class="metric-description">投资回报率</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 投资者准备度 -->
+                <div class="plan-section">
+                    <div class="plan-section-title">📈 投资者准备度评分</div>
+                    <div class="plan-section-content">
+                        <div class="metric-grid">
+                            <div class="metric-card">
+                                <div class="metric-label">市场验证</div>
+                                <div class="metric-value">90%</div>
+                                <div class="metric-description">基于动态字段验证</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">产品就绪度</div>
+                                <div class="metric-value">85%</div>
+                                <div class="metric-description">MVP完成度</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">团队能力</div>
+                                <div class="metric-value">95%</div>
+                                <div class="metric-description">AI原生开发能力</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">财务模型</div>
+                                <div class="metric-value">80%</div>
+                                <div class="metric-description">Token经济模型</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">增长潜力</div>
+                                <div class="metric-value">88%</div>
+                                <div class="metric-description">市场扩展能力</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">综合评分</div>
+                                <div class="metric-value">87.6%</div>
+                                <div class="metric-description">投资者准备度</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 风险控制 -->
+                <div class="plan-section">
+                    <div class="plan-section-title">⚠️ 风险控制</div>
+                    <div class="plan-section-content">
+                        <p><strong>技术风险：</strong></p>
+                        <ul style="margin-left: 20px; margin-bottom: 12px;">
+                            <li>AI能力边界 → 动态调整+能力补强</li>
+                            <li>智能体协调失败 → 分层监控+预算控制</li>
+                            <li>转换精度问题 → 自动化质量检测</li>
+                        </ul>
+                        <p><strong>执行风险：</strong></p>
+                        <ul style="margin-left: 20px;">
+                            <li>Token预算超支 → 实时监控+自动优化</li>
+                            <li>人工瓶颈 → 智能分工优化</li>
+                            <li>质量门失效 → 多层验证+自动化覆盖</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 辅助函数
+        function getPhaseText(phase) {
+            const phases = {
+                'discovery': '发现阶段',
+                'validation': '验证阶段', 
+                'development': '开发阶段',
+                'launch': '发布阶段',
+                'fundraising': '融资阶段'
+            };
+            return phases[phase] || phase;
+        }
+
+        function getTagText(tag) {
+            const tags = {
+                'token-economy': 'Token经济',
+                'mvp': 'MVP',
+                'ai-native': 'AI原生',
+                'quick-launch': '快速启动',
+                'DRY': 'DRY原则',
+                'SOLID': 'SOLID原则',
+                'multi-agent': '多智能体',
+                'human-ai-collaboration': '人机协作'
+            };
+            return tags[tag] || tag;
+        }
+
+        // 导出PDF功能
+        function exportPlan() {
+            // 这里可以集成PDF导出库，如jsPDF
+            alert('PDF导出功能开发中...');
+        }
+
+        // 自动生成示例
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置默认项目名称
+            document.getElementById('projectName').value = 'AIRVIO智能创业助手';
+            
+            // 2秒后自动生成示例
+            setTimeout(() => {
+                generatePlan();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

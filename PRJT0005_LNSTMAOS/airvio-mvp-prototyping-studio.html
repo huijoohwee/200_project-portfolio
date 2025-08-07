@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRVIO - MVP产品快速原型设计工作室 (MVP Product Rapid Prototyping Design Studio)</title>
+    <style>
+        /* MacOS风格变量 */
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --error-color: #FF3B30;
+            --background-color: #F2F2F7;
+            --surface-color: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: #C6C6C8;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --prototype-purple: #6366F1;
+            --design-pink: #EC4899;
+            --dev-green: #10B981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--prototype-purple), var(--design-pink));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .token-budget {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--success-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            margin-top: 60px;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        /* 左侧工具面板 */
+        .sidebar {
+            width: 320px;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .tool-categories {
+            padding: 20px;
+        }
+
+        .category-section {
+            margin-bottom: 24px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .category-header:hover {
+            color: var(--primary-color);
+        }
+
+        .category-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .tool-list {
+            margin-top: 12px;
+        }
+
+        .tool-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .tool-item:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .tool-item.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .tool-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .tool-info {
+            flex: 1;
+        }
+
+        .tool-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .tool-desc {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* 主工作区 */
+        .workspace {
+            flex: 1;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .workspace-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--surface-color);
+        }
+
+        .workspace-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .workspace-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .workspace-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* 原型设计画布 */
+        .design-canvas {
+            background: #FAFAFA;
+            border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius);
+            min-height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .canvas-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .canvas-placeholder h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .canvas-placeholder p {
+            font-size: 14px;
+        }
+
+        /* 组件库 */
+        .component-library {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .component-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .component-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            border-color: var(--primary-color);
+        }
+
+        .component-preview {
+            height: 80px;
+            background: var(--background-color);
+            border-radius: 4px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .component-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .component-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 配置面板 */
+        .config-panel {
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .config-section {
+            margin-bottom: 20px;
+        }
+
+        .config-label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .config-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .config-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .config-range {
+            width: 100%;
+            margin: 8px 0;
+        }
+
+        .range-value {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056CC;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: var(--background-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #28A745;
+        }
+
+        /* 操作栏 */
+        .action-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 16px 0;
+            border-top: 1px solid var(--border-color);
+            margin-top: 20px;
+        }
+
+        /* 进度指示器 */
+        .progress-indicator {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .progress-step.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .progress-step.completed {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .progress-step.pending {
+            background: var(--background-color);
+            color: var(--text-secondary);
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+            }
+            
+            .component-library {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 隐藏类 */
+        .hidden {
+            display: none;
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="logo">🚀</div>
+            <div>
+                <span class="brand-text">AIRVIO</span>
+                <span class="subtitle">MVP产品快速原型设计工作室</span>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <div class="token-budget">
+                <span>💰</span>
+                <span id="currentBudget">53,000</span>
+                <span>Tokens</span>
+            </div>
+            <button class="btn btn-primary" onclick="exportPrototype()">📤 导出原型</button>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧工具面板 -->
+        <div class="sidebar">
+            <div class="tool-categories">
+                <!-- 设计工具 -->
+                <div class="category-section">
+                    <div class="category-header" onclick="toggleCategory('design')">
+                        <div class="category-title">
+                            <div class="category-icon" style="background: var(--design-pink);">🎨</div>
+                            设计工具
+                        </div>
+                        <span id="designCount" class="category-count">6</span>
+                    </div>
+                    <div class="tool-list" id="designTools">
+                        <div class="tool-item" onclick="selectTool('wireframe')">
+                            <div class="tool-icon" style="background: var(--design-pink);">📐</div>
+                            <div class="tool-info">
+                                <div class="tool-name">线框图设计</div>
+                                <div class="tool-desc">快速构建页面结构</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('mockup')">
+                            <div class="tool-icon" style="background: var(--design-pink);">🖼️</div>
+                            <div class="tool-info">
+                                <div class="tool-name">高保真原型</div>
+                                <div class="tool-desc">详细视觉设计</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('interaction')">
+                            <div class="tool-icon" style="background: var(--design-pink);">⚡</div>
+                            <div class="tool-info">
+                                <div class="tool-name">交互设计</div>
+                                <div class="tool-desc">用户体验流程</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('components')">
+                            <div class="tool-icon" style="background: var(--design-pink);">🧩</div>
+                            <div class="tool-info">
+                                <div class="tool-name">组件库</div>
+                                <div class="tool-desc">可复用UI组件</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('responsive')">
+                            <div class="tool-icon" style="background: var(--design-pink);">📱</div>
+                            <div class="tool-info">
+                                <div class="tool-name">响应式设计</div>
+                                <div class="tool-desc">多设备适配</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('animation')">
+                            <div class="tool-icon" style="background: var(--design-pink);">🎬</div>
+                            <div class="tool-info">
+                                <div class="tool-name">动效设计</div>
+                                <div class="tool-desc">微交互动画</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 开发工具 -->
+                <div class="category-section">
+                    <div class="category-header" onclick="toggleCategory('development')">
+                        <div class="category-title">
+                            <div class="category-icon" style="background: var(--dev-green);">💻</div>
+                            开发工具
+                        </div>
+                        <span id="devCount" class="category-count">5</span>
+                    </div>
+                    <div class="tool-list" id="developmentTools">
+                        <div class="tool-item" onclick="selectTool('codeGen')">
+                            <div class="tool-icon" style="background: var(--dev-green);">⚙️</div>
+                            <div class="tool-info">
+                                <div class="tool-name">代码生成</div>
+                                <div class="tool-desc">自动生成前端代码</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('apiDesign')">
+                            <div class="tool-icon" style="background: var(--dev-green);">🔌</div>
+                            <div class="tool-info">
+                                <div class="tool-name">API设计</div>
+                                <div class="tool-desc">接口规范定义</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('database')">
+                            <div class="tool-icon" style="background: var(--dev-green);">🗄️</div>
+                            <div class="tool-info">
+                                <div class="tool-name">数据库设计</div>
+                                <div class="tool-desc">数据模型规划</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('testing')">
+                            <div class="tool-icon" style="background: var(--dev-green);">🧪</div>
+                            <div class="tool-info">
+                                <div class="tool-name">测试工具</div>
+                                <div class="tool-desc">自动化测试</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('deployment')">
+                            <div class="tool-icon" style="background: var(--dev-green);">🚀</div>
+                            <div class="tool-info">
+                                <div class="tool-name">部署配置</div>
+                                <div class="tool-desc">一键部署设置</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 协作工具 -->
+                <div class="category-section">
+                    <div class="category-header" onclick="toggleCategory('collaboration')">
+                        <div class="category-title">
+                            <div class="category-icon" style="background: var(--prototype-purple);">👥</div>
+                            协作工具
+                        </div>
+                        <span id="collabCount" class="category-count">4</span>
+                    </div>
+                    <div class="tool-list" id="collaborationTools">
+                        <div class="tool-item" onclick="selectTool('comments')">
+                            <div class="tool-icon" style="background: var(--prototype-purple);">💬</div>
+                            <div class="tool-info">
+                                <div class="tool-name">评论反馈</div>
+                                <div class="tool-desc">实时协作评论</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('version')">
+                            <div class="tool-icon" style="background: var(--prototype-purple);">📝</div>
+                            <div class="tool-info">
+                                <div class="tool-name">版本控制</div>
+                                <div class="tool-desc">设计版本管理</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('sharing')">
+                            <div class="tool-icon" style="background: var(--prototype-purple);">🔗</div>
+                            <div class="tool-info">
+                                <div class="tool-name">分享链接</div>
+                                <div class="tool-desc">快速分享原型</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('handoff')">
+                            <div class="tool-icon" style="background: var(--prototype-purple);">📋</div>
+                            <div class="tool-info">
+                                <div class="tool-name">设计交付</div>
+                                <div class="tool-desc">开发规范文档</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主工作区 -->
+        <div class="workspace">
+            <div class="workspace-header">
+                <h1 class="workspace-title" id="workspaceTitle">MVP产品快速原型设计工作室</h1>
+                <p class="workspace-subtitle" id="workspaceSubtitle">选择左侧工具开始您的MVP原型设计之旅</p>
+            </div>
+
+            <div class="workspace-content">
+                <!-- 进度指示器 -->
+                <div class="progress-indicator">
+                    <div class="progress-step active" id="step1">
+                        <span>1</span>
+                        <span>需求分析</span>
+                    </div>
+                    <div class="progress-step pending" id="step2">
+                        <span>2</span>
+                        <span>原型设计</span>
+                    </div>
+                    <div class="progress-step pending" id="step3">
+                        <span>3</span>
+                        <span>开发实现</span>
+                    </div>
+                    <div class="progress-step pending" id="step4">
+                        <span>4</span>
+                        <span>测试部署</span>
+                    </div>
+                </div>
+
+                <!-- 统计面板 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="tokenUsage">12,500</div>
+                        <div class="stat-label">已使用Token</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="efficiency">85%</div>
+                        <div class="stat-label">预算效率</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="timeRemaining">18h</div>
+                        <div class="stat-label">剩余时间</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="completionRate">35%</div>
+                        <div class="stat-label">完成进度</div>
+                    </div>
+                </div>
+
+                <!-- 主工作区内容 -->
+                <div id="mainContent">
+                    <!-- 默认欢迎界面 -->
+                    <div id="welcomeContent" class="fade-in">
+                        <div class="config-panel">
+                            <h3 style="margin-bottom: 16px; color: var(--primary-color);">🚀 开始您的MVP原型设计</h3>
+                            
+                            <div class="config-section">
+                                <label class="config-label">项目名称</label>
+                                <input type="text" class="config-input" id="projectName" placeholder="输入您的MVP项目名称" value="我的创新产品">
+                            </div>
+
+                            <div class="config-section">
+                                <label class="config-label">产品类型</label>
+                                <select class="config-select" id="productType">
+                                    <option value="web">Web应用</option>
+                                    <option value="mobile">移动应用</option>
+                                    <option value="desktop">桌面应用</option>
+                                    <option value="hybrid">混合应用</option>
+                                </select>
+                            </div>
+
+                            <div class="config-section">
+                                <label class="config-label">目标用户群体</label>
+                                <input type="text" class="config-input" id="targetUsers" placeholder="描述您的目标用户" value="年轻专业人士">
+                            </div>
+
+                            <div class="config-section">
+                                <label class="config-label">核心功能数量</label>
+                                <input type="range" class="config-range" id="featureCount" min="1" max="10" value="3" oninput="updateRangeValue('featureCount', this.value)">
+                                <div class="range-value" id="featureCountValue">3个核心功能</div>
+                            </div>
+
+                            <div class="config-section">
+                                <label class="config-label">开发周期</label>
+                                <select class="config-select" id="timeline">
+                                    <option value="24h">24小时 (极速MVP)</option>
+                                    <option value="72h">72小时 (标准MVP)</option>
+                                    <option value="1w">1周 (完整MVP)</option>
+                                    <option value="2w">2周 (增强MVP)</option>
+                                </select>
+                            </div>
+
+                            <div class="action-bar">
+                                <button class="btn btn-primary" onclick="startPrototyping()">🚀 开始原型设计</button>
+                                <button class="btn btn-secondary" onclick="loadTemplate()">📋 使用模板</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 设计画布 (隐藏) -->
+                    <div id="designContent" class="hidden">
+                        <div class="design-canvas" id="designCanvas">
+                            <div class="canvas-placeholder">
+                                <h3>🎨 设计画布</h3>
+                                <p>拖拽组件到这里开始设计您的MVP原型</p>
+                            </div>
+                        </div>
+
+                        <div class="component-library">
+                            <div class="component-card" draggable="true" ondragstart="dragStart(event, 'header')">
+                                <div class="component-preview">Header</div>
+                                <div class="component-name">页面头部</div>
+                                <div class="component-desc">导航栏和品牌标识</div>
+                            </div>
+                            <div class="component-card" draggable="true" ondragstart="dragStart(event, 'hero')">
+                                <div class="component-preview">Hero Section</div>
+                                <div class="component-name">主要展示区</div>
+                                <div class="component-desc">核心价值主张</div>
+                            </div>
+                            <div class="component-card" draggable="true" ondragstart="dragStart(event, 'form')">
+                                <div class="component-preview">Form</div>
+                                <div class="component-name">表单组件</div>
+                                <div class="component-desc">用户输入界面</div>
+                            </div>
+                            <div class="component-card" draggable="true" ondragstart="dragStart(event, 'card')">
+                                <div class="component-preview">Card</div>
+                                <div class="component-name">卡片组件</div>
+                                <div class="component-desc">内容展示容器</div>
+                            </div>
+                            <div class="component-card" draggable="true" ondragstart="dragStart(event, 'button')">
+                                <div class="component-preview">Button</div>
+                                <div class="component-name">按钮组件</div>
+                                <div class="component-desc">用户操作触发</div>
+                            </div>
+                            <div class="component-card" draggable="true" ondragstart="dragStart(event, 'footer')">
+                                <div class="component-preview">Footer</div>
+                                <div class="component-name">页面底部</div>
+                                <div class="component-desc">辅助信息和链接</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 开发工具内容 (隐藏) -->
+                    <div id="developmentContent" class="hidden">
+                        <div class="config-panel">
+                            <h3 style="margin-bottom: 16px; color: var(--dev-green);">💻 开发工具配置</h3>
+                            
+                            <div class="config-section">
+                                <label class="config-label">前端框架</label>
+                                <select class="config-select" id="frontend">
+                                    <option value="react">React</option>
+                                    <option value="vue">Vue.js</option>
+                                    <option value="angular">Angular</option>
+                                    <option value="vanilla">原生JavaScript</option>
+                                </select>
+                            </div>
+
+                            <div class="config-section">
+                                <label class="config-label">后端技术</label>
+                                <select class="config-select" id="backend">
+                                    <option value="nodejs">Node.js</option>
+                                    <option value="python">Python</option>
+                                    <option value="java">Java</option>
+                                    <option value="php">PHP</option>
+                                </select>
+                            </div>
+
+                            <div class="config-section">
+                                <label class="config-label">数据库类型</label>
+                                <select class="config-select" id="database">
+                                    <option value="mongodb">MongoDB</option>
+                                    <option value="mysql">MySQL</option>
+                                    <option value="postgresql">PostgreSQL</option>
+                                    <option value="sqlite">SQLite</option>
+                                </select>
+                            </div>
+
+                            <div class="action-bar">
+                                <button class="btn btn-success" onclick="generateCode()">⚙️ 生成代码</button>
+                                <button class="btn btn-secondary" onclick="previewCode()">👀 预览代码</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局状态管理
+        let currentTool = null;
+        let projectConfig = {
+            name: '我的创新产品',
+            type: 'web',
+            targetUsers: '年轻专业人士',
+            featureCount: 3,
+            timeline: '24h',
+            tokenBudget: 53000,
+            usedTokens: 12500
+        };
+
+        // 动态字段配置 (基于AIRVIO fields.yaml)
+        const dynamicFields = {
+            TOKEN_BUDGET_TOTAL: {
+                value: 53000,
+                efficiency_target: 85,
+                optimization_strategy: '模板复用+缓存优化'
+            },
+            MVP_DELIVERY_TIME: {
+                value: '24小时',
+                success_criteria: '24小时内MVP上线'
+            },
+            INTEGRATED_TOKEN_BUDGET_CONTROL: {
+                estimated_tokens: 200,
+                efficiency_target: 95
+            }
+        };
+
+        // 工具选择函数
+        function selectTool(toolName) {
+            // 移除之前的活动状态
+            document.querySelectorAll('.tool-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // 添加当前活动状态
+            event.currentTarget.classList.add('active');
+            currentTool = toolName;
+            
+            // 更新工作区内容
+            updateWorkspace(toolName);
+            
+            // 消耗Token
+            consumeTokens(50);
+        }
+
+        // 更新工作区内容
+        function updateWorkspace(toolName) {
+            const title = document.getElementById('workspaceTitle');
+            const subtitle = document.getElementById('workspaceSubtitle');
+            const welcomeContent = document.getElementById('welcomeContent');
+            const designContent = document.getElementById('designContent');
+            const developmentContent = document.getElementById('developmentContent');
+            
+            // 隐藏所有内容
+            welcomeContent.classList.add('hidden');
+            designContent.classList.add('hidden');
+            developmentContent.classList.add('hidden');
+            
+            switch(toolName) {
+                case 'wireframe':
+                case 'mockup':
+                case 'interaction':
+                case 'components':
+                case 'responsive':
+                case 'animation':
+                    title.textContent = '🎨 设计工具 - ' + getToolDisplayName(toolName);
+                    subtitle.textContent = '使用拖拽方式快速构建您的MVP原型界面';
+                    designContent.classList.remove('hidden');
+                    setupDesignCanvas();
+                    break;
+                    
+                case 'codeGen':
+                case 'apiDesign':
+                case 'database':
+                case 'testing':
+                case 'deployment':
+                    title.textContent = '💻 开发工具 - ' + getToolDisplayName(toolName);
+                    subtitle.textContent = '配置技术栈并生成MVP开发代码';
+                    developmentContent.classList.remove('hidden');
+                    break;
+                    
+                default:
+                    title.textContent = '👥 协作工具 - ' + getToolDisplayName(toolName);
+                    subtitle.textContent = '团队协作和项目管理功能';
+                    welcomeContent.classList.remove('hidden');
+            }
+        }
+
+        // 获取工具显示名称
+        function getToolDisplayName(toolName) {
+            const toolNames = {
+                'wireframe': '线框图设计',
+                'mockup': '高保真原型',
+                'interaction': '交互设计',
+                'components': '组件库',
+                'responsive': '响应式设计',
+                'animation': '动效设计',
+                'codeGen': '代码生成',
+                'apiDesign': 'API设计',
+                'database': '数据库设计',
+                'testing': '测试工具',
+                'deployment': '部署配置',
+                'comments': '评论反馈',
+                'version': '版本控制',
+                'sharing': '分享链接',
+                'handoff': '设计交付'
+            };
+            return toolNames[toolName] || toolName;
+        }
+
+        // 设置设计画布
+        function setupDesignCanvas() {
+            const canvas = document.getElementById('designCanvas');
+            canvas.ondrop = drop;
+            canvas.ondragover = allowDrop;
+        }
+
+        // 拖拽功能
+        function dragStart(event, componentType) {
+            event.dataTransfer.setData('text/plain', componentType);
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        function drop(event) {
+            event.preventDefault();
+            const componentType = event.dataTransfer.getData('text/plain');
+            addComponentToCanvas(componentType);
+            consumeTokens(100); // 添加组件消耗Token
+        }
+
+        // 添加组件到画布
+        function addComponentToCanvas(componentType) {
+            const canvas = document.getElementById('designCanvas');
+            const placeholder = canvas.querySelector('.canvas-placeholder');
+            
+            if (placeholder) {
+                placeholder.style.display = 'none';
+            }
+            
+            const component = document.createElement('div');
+            component.style.cssText = `
+                position: absolute;
+                top: ${Math.random() * 200 + 50}px;
+                left: ${Math.random() * 300 + 50}px;
+                padding: 20px;
+                background: var(--surface-color);
+                border: 2px solid var(--primary-color);
+                border-radius: var(--border-radius);
+                cursor: move;
+                user-select: none;
+            `;
+            component.textContent = componentType.toUpperCase();
+            component.draggable = true;
+            
+            // 添加移动功能
+            component.onmousedown = function(e) {
+                let shiftX = e.clientX - component.getBoundingClientRect().left;
+                let shiftY = e.clientY - component.getBoundingClientRect().top;
+                
+                function moveAt(pageX, pageY) {
+                    component.style.left = pageX - shiftX + 'px';
+                    component.style.top = pageY - shiftY + 'px';
+                }
+                
+                function onMouseMove(event) {
+                    moveAt(event.pageX, event.pageY);
+                }
+                
+                document.addEventListener('mousemove', onMouseMove);
+                
+                component.onmouseup = function() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    component.onmouseup = null;
+                };
+            };
+            
+            canvas.appendChild(component);
+        }
+
+        // 分类折叠功能
+        function toggleCategory(categoryName) {
+            const toolList = document.getElementById(categoryName + 'Tools');
+            if (toolList.style.display === 'none') {
+                toolList.style.display = 'block';
+            } else {
+                toolList.style.display = 'none';
+            }
+        }
+
+        // 开始原型设计
+        function startPrototyping() {
+            const projectName = document.getElementById('projectName').value;
+            const productType = document.getElementById('productType').value;
+            const targetUsers = document.getElementById('targetUsers').value;
+            const featureCount = document.getElementById('featureCount').value;
+            const timeline = document.getElementById('timeline').value;
+            
+            projectConfig = {
+                ...projectConfig,
+                name: projectName,
+                type: productType,
+                targetUsers: targetUsers,
+                featureCount: parseInt(featureCount),
+                timeline: timeline
+            };
+            
+            // 更新进度
+            updateProgress(2);
+            
+            // 自动选择线框图工具
+            selectTool('wireframe');
+            
+            // 消耗Token
+            consumeTokens(500);
+            
+            alert('🚀 项目配置完成！现在可以开始设计您的MVP原型了。');
+        }
+
+        // 加载模板
+        function loadTemplate() {
+            const templates = [
+                '电商平台模板',
+                '社交应用模板', 
+                '企业管理模板',
+                '内容平台模板'
+            ];
+            
+            const selectedTemplate = templates[Math.floor(Math.random() * templates.length)];
+            
+            consumeTokens(300);
+            alert(`📋 已加载 "${selectedTemplate}"，您可以在此基础上进行定制化设计。`);
+        }
+
+        // 生成代码
+        function generateCode() {
+            const frontend = document.getElementById('frontend').value;
+            const backend = document.getElementById('backend').value;
+            const database = document.getElementById('database').value;
+            
+            consumeTokens(2000);
+            updateProgress(3);
+            
+            alert(`⚙️ 代码生成完成！\n前端: ${frontend}\n后端: ${backend}\n数据库: ${database}\n\n代码已保存到项目目录。`);
+        }
+
+        // 预览代码
+        function previewCode() {
+            consumeTokens(100);
+            alert('👀 代码预览功能已开启，您可以实时查看生成的代码结构。');
+        }
+
+        // 导出原型
+        function exportPrototype() {
+            consumeTokens(200);
+            updateProgress(4);
+            alert('📤 原型导出成功！已生成HTML、CSS、JavaScript文件和设计规范文档。');
+        }
+
+        // 更新进度
+        function updateProgress(step) {
+            for (let i = 1; i <= 4; i++) {
+                const stepElement = document.getElementById(`step${i}`);
+                if (i < step) {
+                    stepElement.className = 'progress-step completed';
+                } else if (i === step) {
+                    stepElement.className = 'progress-step active';
+                } else {
+                    stepElement.className = 'progress-step pending';
+                }
+            }
+        }
+
+        // Token消耗函数
+        function consumeTokens(amount) {
+            projectConfig.usedTokens += amount;
+            updateTokenDisplay();
+        }
+
+        // 更新Token显示
+        function updateTokenDisplay() {
+            const currentBudget = document.getElementById('currentBudget');
+            const tokenUsage = document.getElementById('tokenUsage');
+            const efficiency = document.getElementById('efficiency');
+            const completionRate = document.getElementById('completionRate');
+            
+            const remaining = projectConfig.tokenBudget - projectConfig.usedTokens;
+            const efficiencyRate = Math.round((1 - projectConfig.usedTokens / projectConfig.tokenBudget) * 100);
+            const completion = Math.round((projectConfig.usedTokens / projectConfig.tokenBudget) * 100);
+            
+            currentBudget.textContent = remaining.toLocaleString();
+            tokenUsage.textContent = projectConfig.usedTokens.toLocaleString();
+            efficiency.textContent = Math.max(efficiencyRate, 0) + '%';
+            completionRate.textContent = Math.min(completion, 100) + '%';
+            
+            // 更新预算颜色
+            if (remaining < 10000) {
+                currentBudget.parentElement.style.background = 'var(--error-color)';
+            } else if (remaining < 20000) {
+                currentBudget.parentElement.style.background = 'var(--warning-color)';
+            }
+        }
+
+        // 范围输入更新
+        function updateRangeValue(id, value) {
+            const valueElement = document.getElementById(id + 'Value');
+            valueElement.textContent = value + '个核心功能';
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTokenDisplay();
+            
+            // 模拟实时数据更新
+            setInterval(() => {
+                const timeRemaining = document.getElementById('timeRemaining');
+                let currentHours = parseInt(timeRemaining.textContent);
+                if (currentHours > 0) {
+                    timeRemaining.textContent = (currentHours - 0.1).toFixed(1) + 'h';
+                }
+            }, 60000); // 每分钟更新一次
+        });
+    </script>
+</body>
+</html>

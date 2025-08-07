@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRVIO - 学霸学习工具 (EdTech Learning Studio)</title>
+    <style>
+        /* MacOS风格变量 */
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --error-color: #FF3B30;
+            --background-color: #F2F2F7;
+            --surface-color: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: #C6C6C8;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --learning-blue: #4285F4;
+            --knowledge-green: #0F9D58;
+            --progress-orange: #FF6B35;
+            --ai-purple: #9C27B0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--learning-blue), var(--ai-purple));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .token-budget {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--success-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .study-streak {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--progress-orange);
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            margin-top: 60px;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        /* 左侧学习工具面板 */
+        .sidebar {
+            width: 320px;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .tool-categories {
+            padding: 20px;
+        }
+
+        .category-section {
+            margin-bottom: 24px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .category-header:hover {
+            color: var(--primary-color);
+        }
+
+        .category-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .category-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .tool-list {
+            margin-top: 12px;
+        }
+
+        .tool-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid transparent;
+        }
+
+        .tool-item:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .tool-item.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .tool-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .tool-info {
+            flex: 1;
+        }
+
+        .tool-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .tool-desc {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* 主学习区 */
+        .workspace {
+            flex: 1;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .workspace-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--surface-color);
+        }
+
+        .workspace-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .workspace-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .workspace-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* 学习仪表板 */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 学习计划 */
+        .study-plan {
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .plan-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .plan-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .plan-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .plan-item:hover {
+            border-color: var(--primary-color);
+            transform: translateX(4px);
+        }
+
+        .plan-item.completed {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .plan-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .plan-checkbox.checked {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+        }
+
+        .plan-content {
+            flex: 1;
+        }
+
+        .plan-subject {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .plan-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .plan-progress {
+            width: 60px;
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .plan-progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: var(--transition);
+        }
+
+        /* 知识图谱 */
+        .knowledge-map {
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 300px;
+            position: relative;
+        }
+
+        .knowledge-node {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: var(--surface-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .knowledge-node:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .knowledge-node.mastered {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .knowledge-node.learning {
+            background: var(--warning-color);
+            color: white;
+            border-color: var(--warning-color);
+        }
+
+        /* AI助手面板 */
+        .ai-assistant {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .ai-assistant.minimized {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--ai-purple);
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .ai-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .ai-toggle {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .ai-content {
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .ai-message {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            font-size: 12px;
+        }
+
+        .ai-input {
+            display: flex;
+            gap: 8px;
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .ai-input input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 12px;
+        }
+
+        .ai-input button {
+            padding: 8px 16px;
+            background: var(--ai-purple);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056CC;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #28A745;
+        }
+
+        .btn-secondary {
+            background: var(--background-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--learning-blue), var(--knowledge-green));
+            transition: var(--transition);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 280px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ai-assistant {
+                width: 280px;
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+
+        /* 隐藏类 */
+        .hidden {
+            display: none;
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="logo">🎓</div>
+            <div>
+                <span class="brand-text">AIRVIO</span>
+                <span class="subtitle">学霸学习工具</span>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <div class="study-streak">
+                <span>🔥</span>
+                <span id="studyStreak">7</span>
+                <span>天连续学习</span>
+            </div>
+            <div class="token-budget">
+                <span>💰</span>
+                <span id="currentBudget">45,200</span>
+                <span>Tokens</span>
+            </div>
+            <button class="btn btn-primary" onclick="exportStudyReport()">📊 学习报告</button>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧学习工具面板 -->
+        <div class="sidebar">
+            <div class="tool-categories">
+                <!-- 学习规划 -->
+                <div class="category-section">
+                    <div class="category-header" onclick="toggleCategory('planning')">
+                        <div class="category-title">
+                            <div class="category-icon" style="background: var(--learning-blue);">📅</div>
+                            学习规划
+                        </div>
+                        <span class="category-count">5</span>
+                    </div>
+                    <div class="tool-list" id="planningTools">
+                        <div class="tool-item" onclick="selectTool('schedule')">
+                            <div class="tool-icon" style="background: var(--learning-blue);">⏰</div>
+                            <div class="tool-info">
+                                <div class="tool-name">智能排课</div>
+                                <div class="tool-desc">AI优化学习时间表</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('goals')">
+                            <div class="tool-icon" style="background: var(--learning-blue);">🎯</div>
+                            <div class="tool-info">
+                                <div class="tool-name">目标设定</div>
+                                <div class="tool-desc">SMART学习目标</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('roadmap')">
+                            <div class="tool-icon" style="background: var(--learning-blue);">🗺️</div>
+                            <div class="tool-info">
+                                <div class="tool-name">学习路径</div>
+                                <div class="tool-desc">个性化学习路线</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('calendar')">
+                            <div class="tool-icon" style="background: var(--learning-blue);">📆</div>
+                            <div class="tool-info">
+                                <div class="tool-name">学习日历</div>
+                                <div class="tool-desc">可视化时间管理</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('habits')">
+                            <div class="tool-icon" style="background: var(--learning-blue);">🔄</div>
+                            <div class="tool-info">
+                                <div class="tool-name">习惯养成</div>
+                                <div class="tool-desc">学习习惯追踪</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 知识管理 -->
+                <div class="category-section">
+                    <div class="category-header" onclick="toggleCategory('knowledge')">
+                        <div class="category-title">
+                            <div class="category-icon" style="background: var(--knowledge-green);">🧠</div>
+                            知识管理
+                        </div>
+                        <span class="category-count">6</span>
+                    </div>
+                    <div class="tool-list" id="knowledgeTools">
+                        <div class="tool-item" onclick="selectTool('mindmap')">
+                            <div class="tool-icon" style="background: var(--knowledge-green);">🗂️</div>
+                            <div class="tool-info">
+                                <div class="tool-name">思维导图</div>
+                                <div class="tool-desc">知识结构可视化</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('notes')">
+                            <div class="tool-icon" style="background: var(--knowledge-green);">📝</div>
+                            <div class="tool-info">
+                                <div class="tool-name">智能笔记</div>
+                                <div class="tool-desc">AI辅助记录整理</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('flashcards')">
+                            <div class="tool-icon" style="background: var(--knowledge-green);">🃏</div>
+                            <div class="tool-info">
+                                <div class="tool-name">记忆卡片</div>
+                                <div class="tool-desc">间隔重复记忆</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('knowledge-graph')">
+                            <div class="tool-icon" style="background: var(--knowledge-green);">🕸️</div>
+                            <div class="tool-info">
+                                <div class="tool-name">知识图谱</div>
+                                <div class="tool-desc">概念关联网络</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('summary')">
+                            <div class="tool-icon" style="background: var(--knowledge-green);">📋</div>
+                            <div class="tool-info">
+                                <div class="tool-name">智能总结</div>
+                                <div class="tool-desc">AI提取关键信息</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('search')">
+                            <div class="tool-icon" style="background: var(--knowledge-green);">🔍</div>
+                            <div class="tool-info">
+                                <div class="tool-name">知识搜索</div>
+                                <div class="tool-desc">语义化内容检索</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 学习分析 -->
+                <div class="category-section">
+                    <div class="category-header" onclick="toggleCategory('analytics')">
+                        <div class="category-title">
+                            <div class="category-icon" style="background: var(--progress-orange);">📈</div>
+                            学习分析
+                        </div>
+                        <span class="category-count">4</span>
+                    </div>
+                    <div class="tool-list" id="analyticsTools">
+                        <div class="tool-item" onclick="selectTool('progress')">
+                            <div class="tool-icon" style="background: var(--progress-orange);">📊</div>
+                            <div class="tool-info">
+                                <div class="tool-name">进度追踪</div>
+                                <div class="tool-desc">学习数据可视化</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('performance')">
+                            <div class="tool-icon" style="background: var(--progress-orange);">⚡</div>
+                            <div class="tool-info">
+                                <div class="tool-name">效率分析</div>
+                                <div class="tool-desc">学习效果评估</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('weak-points')">
+                            <div class="tool-icon" style="background: var(--progress-orange);">🎯</div>
+                            <div class="tool-info">
+                                <div class="tool-name">薄弱点分析</div>
+                                <div class="tool-desc">个性化改进建议</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('predictions')">
+                            <div class="tool-icon" style="background: var(--progress-orange);">🔮</div>
+                            <div class="tool-info">
+                                <div class="tool-name">成绩预测</div>
+                                <div class="tool-desc">AI学习成果预估</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI助手 -->
+                <div class="category-section">
+                    <div class="category-header" onclick="toggleCategory('ai')">
+                        <div class="category-title">
+                            <div class="category-icon" style="background: var(--ai-purple);">🤖</div>
+                            AI助手
+                        </div>
+                        <span class="category-count">3</span>
+                    </div>
+                    <div class="tool-list" id="aiTools">
+                        <div class="tool-item" onclick="selectTool('tutor')">
+                            <div class="tool-icon" style="background: var(--ai-purple);">👨‍🏫</div>
+                            <div class="tool-info">
+                                <div class="tool-name">AI导师</div>
+                                <div class="tool-desc">个性化学习指导</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('qa')">
+                            <div class="tool-icon" style="background: var(--ai-purple);">❓</div>
+                            <div class="tool-info">
+                                <div class="tool-name">智能问答</div>
+                                <div class="tool-desc">即时答疑解惑</div>
+                            </div>
+                        </div>
+                        <div class="tool-item" onclick="selectTool('recommendations')">
+                            <div class="tool-icon" style="background: var(--ai-purple);">💡</div>
+                            <div class="tool-info">
+                                <div class="tool-name">学习推荐</div>
+                                <div class="tool-desc">智能内容推荐</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主学习区 -->
+        <div class="workspace">
+            <div class="workspace-header">
+                <h1 class="workspace-title" id="workspaceTitle">学霸学习工具仪表板</h1>
+                <p class="workspace-subtitle" id="workspaceSubtitle">智能化学习管理，助您成为学霸</p>
+            </div>
+
+            <div class="workspace-content">
+                <!-- 学习仪表板 -->
+                <div id="dashboardContent" class="fade-in">
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <div class="card-icon" style="background: var(--learning-blue);">📚</div>
+                                <div class="card-title">今日学习时长</div>
+                            </div>
+                            <div class="card-value" id="todayStudyTime">4.5h</div>
+                            <div class="card-desc">目标: 6小时</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <div class="card-icon" style="background: var(--knowledge-green);">🧠</div>
+                                <div class="card-title">知识掌握度</div>
+                            </div>
+                            <div class="card-value" id="knowledgeMastery">87%</div>
+                            <div class="card-desc">本周提升 +5%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 87%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <div class="card-icon" style="background: var(--progress-orange);">⚡</div>
+                                <div class="card-title">学习效率</div>
+                            </div>
+                            <div class="card-value" id="learningEfficiency">92%</div>
+                            <div class="card-desc">高于平均水平</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 92%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <div class="card-icon" style="background: var(--ai-purple);">🎯</div>
+                                <div class="card-title">目标完成率</div>
+                            </div>
+                            <div class="card-value" id="goalCompletion">78%</div>
+                            <div class="card-desc">本月目标进度</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 78%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 今日学习计划 -->
+                    <div class="study-plan">
+                        <div class="plan-header">
+                            <h3 class="plan-title">📅 今日学习计划</h3>
+                            <button class="btn btn-secondary" onclick="addStudyPlan()">+ 添加任务</button>
+                        </div>
+                        
+                        <div class="plan-item" onclick="togglePlanItem(this)">
+                            <div class="plan-checkbox">✓</div>
+                            <div class="plan-content">
+                                <div class="plan-subject">数学 - 微积分基础</div>
+                                <div class="plan-time">09:00 - 10:30 (90分钟)</div>
+                            </div>
+                            <div class="plan-progress">
+                                <div class="plan-progress-fill" style="width: 100%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="plan-item" onclick="togglePlanItem(this)">
+                            <div class="plan-checkbox checked">✓</div>
+                            <div class="plan-content">
+                                <div class="plan-subject">英语 - 阅读理解训练</div>
+                                <div class="plan-time">11:00 - 12:00 (60分钟)</div>
+                            </div>
+                            <div class="plan-progress">
+                                <div class="plan-progress-fill" style="width: 80%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="plan-item" onclick="togglePlanItem(this)">
+                            <div class="plan-checkbox"></div>
+                            <div class="plan-content">
+                                <div class="plan-subject">物理 - 力学实验</div>
+                                <div class="plan-time">14:00 - 15:30 (90分钟)</div>
+                            </div>
+                            <div class="plan-progress">
+                                <div class="plan-progress-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="plan-item" onclick="togglePlanItem(this)">
+                            <div class="plan-checkbox"></div>
+                            <div class="plan-content">
+                                <div class="plan-subject">化学 - 有机化学复习</div>
+                                <div class="plan-time">16:00 - 17:00 (60分钟)</div>
+                            </div>
+                            <div class="plan-progress">
+                                <div class="plan-progress-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 知识图谱 -->
+                    <div class="knowledge-map">
+                        <h3 style="margin-bottom: 20px; color: var(--primary-color);">🕸️ 知识图谱</h3>
+                        
+                        <!-- 数学节点 -->
+                        <div class="knowledge-node mastered" style="top: 50px; left: 100px;" onclick="exploreKnowledge('math')">
+                            数学基础
+                        </div>
+                        
+                        <!-- 物理节点 -->
+                        <div class="knowledge-node learning" style="top: 120px; left: 250px;" onclick="exploreKnowledge('physics')">
+                            物理概念
+                        </div>
+                        
+                        <!-- 化学节点 -->
+                        <div class="knowledge-node" style="top: 80px; left: 400px;" onclick="exploreKnowledge('chemistry')">
+                            化学原理
+                        </div>
+                        
+                        <!-- 英语节点 -->
+                        <div class="knowledge-node mastered" style="top: 180px; left: 150px;" onclick="exploreKnowledge('english')">
+                            英语语法
+                        </div>
+                        
+                        <!-- 生物节点 -->
+                        <div class="knowledge-node learning" style="top: 150px; left: 350px;" onclick="exploreKnowledge('biology')">
+                            生物结构
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 其他工具内容区域 (隐藏) -->
+                <div id="toolContent" class="hidden">
+                    <div id="toolSpecificContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI助手面板 -->
+    <div class="ai-assistant" id="aiAssistant">
+        <div class="ai-header">
+            <div class="ai-title">🤖 AI学习助手</div>
+            <button class="ai-toggle" onclick="toggleAI()">−</button>
+        </div>
+        <div class="ai-content" id="aiContent">
+            <div class="ai-message">
+                👋 你好！我是你的AI学习助手。有什么学习问题需要帮助吗？
+            </div>
+            <div class="ai-message">
+                💡 建议：根据你的学习进度，推荐今天重点复习物理力学部分。
+            </div>
+        </div>
+        <div class="ai-input">
+            <input type="text" placeholder="输入你的问题..." id="aiInput" onkeypress="handleAIInput(event)">
+            <button onclick="sendAIMessage()">发送</button>
+        </div>
+    </div>
+
+    <script>
+        // 全局状态管理
+        let currentTool = null;
+        let studyData = {
+            todayStudyTime: 4.5,
+            knowledgeMastery: 87,
+            learningEfficiency: 92,
+            goalCompletion: 78,
+            studyStreak: 7,
+            tokenBudget: 53000,
+            usedTokens: 7800
+        };
+
+        // 动态字段配置 (基于AIRVIO fields.yaml)
+        const dynamicFields = {
+            TOKEN_BUDGET_TOTAL: {
+                value: 53000,
+                efficiency_target: 85,
+                optimization_strategy: '智能学习路径+知识缓存'
+            },
+            MVP_DELIVERY_TIME: {
+                value: '24小时',
+                success_criteria: '学习计划24小时内生成'
+            },
+            LEARNING_EFFICIENCY: {
+                target: 90,
+                current: 92,
+                optimization: 'AI个性化推荐'
+            }
+        };
+
+        // 工具选择函数
+        function selectTool(toolName) {
+            // 移除之前的活动状态
+            document.querySelectorAll('.tool-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // 添加当前活动状态
+            event.currentTarget.classList.add('active');
+            currentTool = toolName;
+            
+            // 更新工作区内容
+            updateWorkspace(toolName);
+            
+            // 消耗Token
+            consumeTokens(50);
+        }
+
+        // 更新工作区内容
+        function updateWorkspace(toolName) {
+            const title = document.getElementById('workspaceTitle');
+            const subtitle = document.getElementById('workspaceSubtitle');
+            const dashboardContent = document.getElementById('dashboardContent');
+            const toolContent = document.getElementById('toolContent');
+            const toolSpecificContent = document.getElementById('toolSpecificContent');
+            
+            // 隐藏仪表板，显示工具内容
+            dashboardContent.classList.add('hidden');
+            toolContent.classList.remove('hidden');
+            
+            // 更新标题和内容
+            const toolInfo = getToolInfo(toolName);
+            title.textContent = toolInfo.title;
+            subtitle.textContent = toolInfo.subtitle;
+            toolSpecificContent.innerHTML = toolInfo.content;
+        }
+
+        // 获取工具信息
+        function getToolInfo(toolName) {
+            const tools = {
+                'schedule': {
+                    title: '⏰ 智能排课系统',
+                    subtitle: 'AI优化您的学习时间安排',
+                    content: `
+                        <div class="study-plan">
+                            <h3>📅 智能课程安排</h3>
+                            <div style="margin: 20px 0;">
+                                <label>学习强度:</label>
+                                <input type="range" min="1" max="10" value="7" style="width: 100%; margin: 10px 0;">
+                                <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary);">
+                                    <span>轻松</span><span>适中</span><span>高强度</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="generateSchedule()">🎯 生成最优时间表</button>
+                        </div>
+                    `
+                },
+                'mindmap': {
+                    title: '🗂️ 思维导图工具',
+                    subtitle: '可视化知识结构，提升理解效率',
+                    content: `
+                        <div class="knowledge-map" style="min-height: 400px; border: 2px dashed var(--border-color);">
+                            <div style="text-align: center; padding: 50px; color: var(--text-secondary);">
+                                <h3>🧠 思维导图画布</h3>
+                                <p>点击添加节点，拖拽创建连接</p>
+                                <button class="btn btn-primary" onclick="createMindMap()">🎨 开始创建</button>
+                            </div>
+                        </div>
+                    `
+                },
+                'progress': {
+                    title: '📊 学习进度分析',
+                    subtitle: '数据驱动的学习效果评估',
+                    content: `
+                        <div class="dashboard-grid">
+                            <div class="dashboard-card">
+                                <h4>📈 本周学习趋势</h4>
+                                <div style="height: 100px; background: var(--background-color); border-radius: 8px; margin: 10px 0; display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+                                    学习时长趋势图
+                                </div>
+                            </div>
+                            <div class="dashboard-card">
+                                <h4>🎯 科目掌握度</h4>
+                                <div style="margin: 10px 0;">
+                                    <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                                        <span>数学</span><span>95%</span>
+                                    </div>
+                                    <div class="progress-bar"><div class="progress-fill" style="width: 95%;"></div></div>
+                                    <div style="display: flex; justify-content: space-between; margin: 8px 0;">
+                                        <span>物理</span><span>78%</span>
+                                    </div>
+                                    <div class="progress-bar"><div class="progress-fill" style="width: 78%;"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                },
+                'tutor': {
+                    title: '👨‍🏫 AI个人导师',
+                    subtitle: '24/7智能学习指导',
+                    content: `
+                        <div class="study-plan">
+                            <h3>🤖 AI导师对话</h3>
+                            <div style="background: var(--background-color); padding: 20px; border-radius: 8px; margin: 20px 0; min-height: 200px;">
+                                <div class="ai-message">👨‍🏫 根据你的学习数据，我建议你今天重点关注物理力学部分。你在这个领域的掌握度还有提升空间。</div>
+                                <div class="ai-message">📚 推荐学习资源：《力学基础教程》第3-5章，预计学习时间90分钟。</div>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" placeholder="向AI导师提问..." style="flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;">
+                                <button class="btn btn-primary">发送</button>
+                            </div>
+                        </div>
+                    `
+                }
+            };
+            
+            return tools[toolName] || {
+                title: '🛠️ 学习工具',
+                subtitle: '选择的学习工具',
+                content: '<div style="text-align: center; padding: 50px; color: var(--text-secondary);">工具内容加载中...</div>'
+            };
+        }
+
+        // 分类折叠功能
+        function toggleCategory(categoryName) {
+            const toolList = document.getElementById(categoryName + 'Tools');
+            if (toolList.style.display === 'none') {
+                toolList.style.display = 'block';
+            } else {
+                toolList.style.display = 'none';
+            }
+        }
+
+        // 切换学习计划项目
+        function togglePlanItem(item) {
+            const checkbox = item.querySelector('.plan-checkbox');
+            const progressFill = item.querySelector('.plan-progress-fill');
+            
+            if (checkbox.classList.contains('checked')) {
+                checkbox.classList.remove('checked');
+                checkbox.textContent = '';
+                progressFill.style.width = '0%';
+                item.classList.remove('completed');
+            } else {
+                checkbox.classList.add('checked');
+                checkbox.textContent = '✓';
+                progressFill.style.width = '100%';
+                item.classList.add('completed');
+                
+                // 消耗Token并更新学习时间
+                consumeTokens(100);
+                updateStudyProgress();
+            }
+        }
+
+        // 探索知识点
+        function exploreKnowledge(subject) {
+            const subjects = {
+                'math': '数学基础',
+                'physics': '物理概念', 
+                'chemistry': '化学原理',
+                'english': '英语语法',
+                'biology': '生物结构'
+            };
+            
+            consumeTokens(150);
+            alert(`🧠 正在深入学习 "${subjects[subject]}"\n\n推荐学习路径已生成，预计学习时间45分钟。`);
+        }
+
+        // AI助手功能
+        function toggleAI() {
+            const assistant = document.getElementById('aiAssistant');
+            const content = document.getElementById('aiContent');
+            const toggle = document.querySelector('.ai-toggle');
+            
+            if (assistant.classList.contains('minimized')) {
+                assistant.classList.remove('minimized');
+                content.style.display = 'block';
+                toggle.textContent = '−';
+            } else {
+                assistant.classList.add('minimized');
+                content.style.display = 'none';
+                toggle.textContent = '+';
+            }
+        }
+
+        function handleAIInput(event) {
+            if (event.key === 'Enter') {
+                sendAIMessage();
+            }
+        }
+
+        function sendAIMessage() {
+            const input = document.getElementById('aiInput');
+            const content = document.getElementById('aiContent');
+            const message = input.value.trim();
+            
+            if (message) {
+                // 添加用户消息
+                const userMsg = document.createElement('div');
+                userMsg.className = 'ai-message';
+                userMsg.style.background = 'var(--primary-color)';
+                userMsg.style.color = 'white';
+                userMsg.textContent = '👤 ' + message;
+                content.appendChild(userMsg);
+                
+                // 模拟AI回复
+                setTimeout(() => {
+                    const aiMsg = document.createElement('div');
+                    aiMsg.className = 'ai-message';
+                    aiMsg.textContent = '🤖 ' + generateAIResponse(message);
+                    content.appendChild(aiMsg);
+                    content.scrollTop = content.scrollHeight;
+                }, 1000);
+                
+                input.value = '';
+                consumeTokens(200);
+                content.scrollTop = content.scrollHeight;
+            }
+        }
+
+        function generateAIResponse(message) {
+            const responses = [
+                '根据你的问题，我建议你先复习基础概念，然后进行练习。',
+                '这是一个很好的问题！让我为你制定一个学习计划。',
+                '我注意到你在这个领域需要加强，推荐以下学习资源...',
+                '基于你的学习数据，我建议调整学习策略。',
+                '很棒的进步！继续保持这个学习节奏。'
+            ];
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        // 工具函数
+        function generateSchedule() {
+            consumeTokens(500);
+            alert('📅 智能时间表已生成！\n\n基于你的学习习惯和目标，已为你安排最优学习计划。');
+        }
+
+        function createMindMap() {
+            consumeTokens(300);
+            alert('🧠 思维导图工具已启动！\n\n你可以开始添加知识节点并建立连接关系。');
+        }
+
+        function addStudyPlan() {
+            const subject = prompt('请输入学习科目:');
+            const time = prompt('请输入学习时间 (如: 09:00-10:30):');
+            
+            if (subject && time) {
+                consumeTokens(100);
+                alert(`✅ 已添加学习任务:\n科目: ${subject}\n时间: ${time}`);
+            }
+        }
+
+        function exportStudyReport() {
+            consumeTokens(300);
+            alert('📊 学习报告已生成！\n\n包含详细的学习数据分析、进度评估和改进建议。');
+        }
+
+        // 更新学习进度
+        function updateStudyProgress() {
+            studyData.todayStudyTime += 0.5;
+            studyData.knowledgeMastery += 1;
+            studyData.learningEfficiency = Math.min(100, studyData.learningEfficiency + 0.5);
+            studyData.goalCompletion += 2;
+            
+            // 更新显示
+            document.getElementById('todayStudyTime').textContent = studyData.todayStudyTime.toFixed(1) + 'h';
+            document.getElementById('knowledgeMastery').textContent = Math.min(100, studyData.knowledgeMastery) + '%';
+            document.getElementById('learningEfficiency').textContent = Math.min(100, studyData.learningEfficiency) + '%';
+            document.getElementById('goalCompletion').textContent = Math.min(100, studyData.goalCompletion) + '%';
+        }
+
+        // Token消耗函数
+        function consumeTokens(amount) {
+            studyData.usedTokens += amount;
+            updateTokenDisplay();
+        }
+
+        // 更新Token显示
+        function updateTokenDisplay() {
+            const currentBudget = document.getElementById('currentBudget');
+            const remaining = studyData.tokenBudget - studyData.usedTokens;
+            
+            currentBudget.textContent = remaining.toLocaleString();
+            
+            // 更新预算颜色
+            const budgetElement = currentBudget.parentElement;
+            if (remaining < 10000) {
+                budgetElement.style.background = 'var(--error-color)';
+            } else if (remaining < 20000) {
+                budgetElement.style.background = 'var(--warning-color)';
+            } else {
+                budgetElement.style.background = 'var(--success-color)';
+            }
+        }
+
+        // 返回仪表板
+        function showDashboard() {
+            const dashboardContent = document.getElementById('dashboardContent');
+            const toolContent = document.getElementById('toolContent');
+            const title = document.getElementById('workspaceTitle');
+            const subtitle = document.getElementById('workspaceSubtitle');
+            
+            dashboardContent.classList.remove('hidden');
+            toolContent.classList.add('hidden');
+            title.textContent = '学霸学习工具仪表板';
+            subtitle.textContent = '智能化学习管理，助您成为学霸';
+            
+            // 移除工具活动状态
+            document.querySelectorAll('.tool-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            currentTool = null;
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateTokenDisplay();
+            
+            // 添加返回仪表板的快捷键
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    showDashboard();
+                }
+            });
+            
+            // 模拟实时数据更新
+            setInterval(() => {
+                // 随机更新一些数据
+                if (Math.random() > 0.7) {
+                    studyData.learningEfficiency = Math.min(100, studyData.learningEfficiency + Math.random() * 2 - 1);
+                    document.getElementById('learningEfficiency').textContent = Math.round(studyData.learningEfficiency) + '%';
+                }
+            }, 30000); // 每30秒更新一次
+        });
+    </script>
+</body>
+</html>

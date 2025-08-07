@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRVIO - AI智能体统筹协调中枢</title>
+    <style>
+        /* MacOS风格变量 */
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --error-color: #FF3B30;
+            --background-color: #F2F2F7;
+            --surface-color: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: #C6C6C8;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--success-color);
+            color: white;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 280px;
+            height: calc(100vh - 60px);
+            margin-top: 60px;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        /* 左侧智能体面板 */
+        .agents-panel {
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .panel-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .agents-list {
+            padding: 20px;
+        }
+
+        .agent-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+
+        .agent-item:hover {
+            background: #E3F2FD;
+            border-color: var(--primary-color);
+        }
+
+        .agent-item.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .agent-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+
+        .agent-info {
+            flex: 1;
+        }
+
+        .agent-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .agent-status {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .agent-tokens {
+            font-size: 11px;
+            padding: 2px 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        /* 中央控制面板 */
+        .control-panel {
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .orchestration-view {
+            padding: 20px;
+            flex: 1;
+        }
+
+        .orchestration-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .orchestration-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .orchestration-controls {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056CC;
+        }
+
+        .btn-secondary {
+            background: var(--background-color);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* 智能体流程图 */
+        .workflow-canvas {
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            min-height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .workflow-node {
+            position: absolute;
+            width: 120px;
+            height: 80px;
+            background: var(--surface-color);
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .workflow-node:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        .workflow-node.active {
+            border-color: var(--success-color);
+            background: #E8F5E8;
+        }
+
+        .workflow-node.processing {
+            border-color: var(--warning-color);
+            background: #FFF3E0;
+            animation: processing 2s infinite;
+        }
+
+        @keyframes processing {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .node-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .node-name {
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .workflow-connection {
+            position: absolute;
+            height: 2px;
+            background: var(--border-color);
+            z-index: 1;
+        }
+
+        .workflow-connection.active {
+            background: var(--success-color);
+            animation: flow 2s infinite;
+        }
+
+        @keyframes flow {
+            0% { background-position: 0 0; }
+            100% { background-position: 20px 0; }
+        }
+
+        /* 任务队列 */
+        .task-queue {
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 20px;
+        }
+
+        .queue-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .queue-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .queue-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            margin-bottom: 8px;
+            border-left: 4px solid var(--border-color);
+        }
+
+        .task-item.pending {
+            border-left-color: var(--warning-color);
+        }
+
+        .task-item.processing {
+            border-left-color: var(--primary-color);
+        }
+
+        .task-item.completed {
+            border-left-color: var(--success-color);
+        }
+
+        .task-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .task-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 右侧监控面板 */
+        .monitoring-panel {
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .metrics-grid {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: var(--background-color);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .metric-trend {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .trend-up {
+            background: #E8F5E8;
+            color: var(--success-color);
+        }
+
+        .trend-down {
+            background: #FFEBEE;
+            color: var(--error-color);
+        }
+
+        /* Token预算控制 */
+        .budget-control {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .budget-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .budget-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .budget-total {
+            font-size: 14px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .budget-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .budget-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-color), var(--warning-color));
+            transition: var(--transition);
+        }
+
+        .budget-items {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .budget-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .budget-item-name {
+            color: var(--text-secondary);
+        }
+
+        .budget-item-value {
+            font-weight: 600;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 280px 1fr 260px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+            }
+            
+            .agents-panel,
+            .monitoring-panel {
+                height: auto;
+                max-height: 300px;
+            }
+        }
+
+        /* 动画效果 */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="logo">🤖</div>
+            <div>
+                <div class="brand-text">AIRVIO</div>
+                <div class="subtitle">AI智能体统筹协调中枢</div>
+            </div>
+        </div>
+        <div class="nav-controls">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>系统运行中</span>
+            </div>
+            <button class="btn btn-primary" onclick="emergencyStop()">紧急停止</button>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧智能体面板 -->
+        <div class="agents-panel">
+            <div class="panel-header">
+                <div class="panel-title">MAOS智能体编排</div>
+                <div class="panel-subtitle">6类核心智能体 • 自动化协作≥90%</div>
+            </div>
+            <div class="agents-list">
+                <div class="agent-item active" data-agent="orchestration">
+                    <div class="agent-icon" style="background: #FF6B6B;">🎯</div>
+                    <div class="agent-info">
+                        <div class="agent-name">编排智能体</div>
+                        <div class="agent-status">运行中 • 中央协调</div>
+                    </div>
+                    <div class="agent-tokens">200T</div>
+                </div>
+                <div class="agent-item" data-agent="discovery">
+                    <div class="agent-icon" style="background: #4ECDC4;">🔍</div>
+                    <div class="agent-info">
+                        <div class="agent-name">发现智能体</div>
+                        <div class="agent-status">待机 • 问题发现</div>
+                    </div>
+                    <div class="agent-tokens">1500T</div>
+                </div>
+                <div class="agent-item" data-agent="validation">
+                    <div class="agent-icon" style="background: #45B7D1;">✅</div>
+                    <div class="agent-info">
+                        <div class="agent-name">验证智能体</div>
+                        <div class="agent-status">处理中 • 假设验证</div>
+                    </div>
+                    <div class="agent-tokens">2000T</div>
+                </div>
+                <div class="agent-item" data-agent="development">
+                    <div class="agent-icon" style="background: #96CEB4;">⚙️</div>
+                    <div class="agent-info">
+                        <div class="agent-name">开发智能体</div>
+                        <div class="agent-status">运行中 • MVP构建</div>
+                    </div>
+                    <div class="agent-tokens">2500T</div>
+                </div>
+                <div class="agent-item" data-agent="fundraising">
+                    <div class="agent-icon" style="background: #FECA57;">💰</div>
+                    <div class="agent-info">
+                        <div class="agent-name">融资智能体</div>
+                        <div class="agent-status">待机 • 投资人就绪</div>
+                    </div>
+                    <div class="agent-tokens">2500T</div>
+                </div>
+                <div class="agent-item" data-agent="monitoring">
+                    <div class="agent-icon" style="background: #FF9FF3;">📊</div>
+                    <div class="agent-info">
+                        <div class="agent-name">监控智能体</div>
+                        <div class="agent-status">运行中 • 实时监控</div>
+                    </div>
+                    <div class="agent-tokens">300T</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 中央控制面板 -->
+        <div class="control-panel">
+            <div class="orchestration-view">
+                <div class="orchestration-header">
+                    <div class="orchestration-title">智能体协作流程</div>
+                    <div class="orchestration-controls">
+                        <button class="btn btn-secondary" onclick="pauseOrchestration()">暂停</button>
+                        <button class="btn btn-primary" onclick="startOrchestration()">启动编排</button>
+                    </div>
+                </div>
+
+                <!-- 智能体流程图 -->
+                <div class="workflow-canvas" id="workflowCanvas">
+                    <!-- 编排智能体 -->
+                    <div class="workflow-node active" style="top: 20px; left: 50%; transform: translateX(-50%);">
+                        <div class="node-icon">🎯</div>
+                        <div class="node-name">编排智能体</div>
+                    </div>
+
+                    <!-- 发现智能体 -->
+                    <div class="workflow-node" style="top: 120px; left: 20%;">
+                        <div class="node-icon">🔍</div>
+                        <div class="node-name">发现智能体</div>
+                    </div>
+
+                    <!-- 验证智能体 -->
+                    <div class="workflow-node processing" style="top: 120px; left: 50%; transform: translateX(-50%);">
+                        <div class="node-icon">✅</div>
+                        <div class="node-name">验证智能体</div>
+                    </div>
+
+                    <!-- 开发智能体 -->
+                    <div class="workflow-node active" style="top: 120px; right: 20%;">
+                        <div class="node-icon">⚙️</div>
+                        <div class="node-name">开发智能体</div>
+                    </div>
+
+                    <!-- 融资智能体 -->
+                    <div class="workflow-node" style="top: 220px; left: 30%;">
+                        <div class="node-icon">💰</div>
+                        <div class="node-name">融资智能体</div>
+                    </div>
+
+                    <!-- 监控智能体 -->
+                    <div class="workflow-node active" style="top: 220px; right: 30%;">
+                        <div class="node-icon">📊</div>
+                        <div class="node-name">监控智能体</div>
+                    </div>
+
+                    <!-- 连接线 -->
+                    <div class="workflow-connection active" style="top: 60px; left: 50%; width: 2px; height: 60px; transform: translateX(-50%);"></div>
+                    <div class="workflow-connection active" style="top: 100px; left: 30%; width: 20%; height: 2px;"></div>
+                    <div class="workflow-connection" style="top: 100px; right: 30%; width: 20%; height: 2px;"></div>
+                </div>
+
+                <!-- 任务队列 -->
+                <div class="task-queue">
+                    <div class="queue-header">
+                        <div class="queue-title">执行队列</div>
+                        <div class="queue-count">5</div>
+                    </div>
+                    <div class="task-item processing">
+                        <div class="task-icon" style="background: var(--primary-color);">✅</div>
+                        <div class="task-info">
+                            <div class="task-name">MVP功能验证</div>
+                            <div class="task-meta">验证智能体 • 预计2分钟</div>
+                        </div>
+                    </div>
+                    <div class="task-item pending">
+                        <div class="task-icon" style="background: var(--warning-color);">⚙️</div>
+                        <div class="task-info">
+                            <div class="task-name">代码生成优化</div>
+                            <div class="task-meta">开发智能体 • 等待中</div>
+                        </div>
+                    </div>
+                    <div class="task-item completed">
+                        <div class="task-icon" style="background: var(--success-color);">🔍</div>
+                        <div class="task-info">
+                            <div class="task-name">市场需求分析</div>
+                            <div class="task-meta">发现智能体 • 已完成</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧监控面板 -->
+        <div class="monitoring-panel">
+            <div class="panel-header">
+                <div class="panel-title">实时监控</div>
+                <div class="panel-subtitle">系统可用性≥99% • 效率≥85%</div>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" style="color: var(--success-color);">99.2%</div>
+                    <div class="metric-label">系统可用性</div>
+                    <div class="metric-trend trend-up">↗ +0.3%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color: var(--primary-color);">87%</div>
+                    <div class="metric-label">协作效率</div>
+                    <div class="metric-trend trend-up">↗ +5%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color: var(--warning-color);">2.3s</div>
+                    <div class="metric-label">响应时间</div>
+                    <div class="metric-trend trend-down">↘ -0.2s</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" style="color: var(--success-color);">95%</div>
+                    <div class="metric-label">MVP存活率</div>
+                    <div class="metric-trend trend-up">↗ +2%</div>
+                </div>
+            </div>
+
+            <!-- Token预算控制 -->
+            <div class="budget-control">
+                <div class="budget-header">
+                    <div class="budget-title">Token预算</div>
+                    <div class="budget-total">8,700 / 53,000</div>
+                </div>
+                <div class="budget-bar">
+                    <div class="budget-fill" style="width: 16.4%;"></div>
+                </div>
+                <div class="budget-items">
+                    <div class="budget-item">
+                        <span class="budget-item-name">编排智能体</span>
+                        <span class="budget-item-value">200T</span>
+                    </div>
+                    <div class="budget-item">
+                        <span class="budget-item-name">发现智能体</span>
+                        <span class="budget-item-value">1,500T</span>
+                    </div>
+                    <div class="budget-item">
+                        <span class="budget-item-name">验证智能体</span>
+                        <span class="budget-item-value">2,000T</span>
+                    </div>
+                    <div class="budget-item">
+                        <span class="budget-item-name">开发智能体</span>
+                        <span class="budget-item-value">2,500T</span>
+                    </div>
+                    <div class="budget-item">
+                        <span class="budget-item-name">融资智能体</span>
+                        <span class="budget-item-value">2,500T</span>
+                    </div>
+                    <div class="budget-item">
+                        <span class="budget-item-name">监控智能体</span>
+                        <span class="budget-item-value">300T</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 智能体状态管理
+        class AgentOrchestrator {
+            constructor() {
+                this.agents = {
+                    orchestration: { status: 'active', tokens: 200, efficiency: 95 },
+                    discovery: { status: 'idle', tokens: 1500, efficiency: 88 },
+                    validation: { status: 'processing', tokens: 2000, efficiency: 92 },
+                    development: { status: 'active', tokens: 2500, efficiency: 85 },
+                    fundraising: { status: 'idle', tokens: 2500, efficiency: 90 },
+                    monitoring: { status: 'active', tokens: 300, efficiency: 98 }
+                };
+                this.totalBudget = 53000;
+                this.usedBudget = 8700;
+                this.isRunning = true;
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.startMonitoring();
+                this.updateMetrics();
+            }
+
+            bindEvents() {
+                // 智能体点击事件
+                document.querySelectorAll('.agent-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        this.selectAgent(item.dataset.agent);
+                    });
+                });
+
+                // 工作流节点点击事件
+                document.querySelectorAll('.workflow-node').forEach(node => {
+                    node.addEventListener('click', (e) => {
+                        this.toggleNodeStatus(node);
+                    });
+                });
+            }
+
+            selectAgent(agentId) {
+                // 更新选中状态
+                document.querySelectorAll('.agent-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector(`[data-agent="${agentId}"]`).classList.add('active');
+
+                // 显示智能体详情
+                this.showAgentDetails(agentId);
+            }
+
+            showAgentDetails(agentId) {
+                const agent = this.agents[agentId];
+                console.log(`智能体详情: ${agentId}`, agent);
+                // 这里可以添加详情面板显示逻辑
+            }
+
+            toggleNodeStatus(node) {
+                if (node.classList.contains('active')) {
+                    node.classList.remove('active');
+                    node.classList.add('processing');
+                } else if (node.classList.contains('processing')) {
+                    node.classList.remove('processing');
+                } else {
+                    node.classList.add('active');
+                }
+            }
+
+            startMonitoring() {
+                setInterval(() => {
+                    this.updateMetrics();
+                    this.simulateAgentActivity();
+                }, 3000);
+            }
+
+            updateMetrics() {
+                // 模拟实时数据更新
+                const metrics = {
+                    availability: (99 + Math.random() * 0.5).toFixed(1),
+                    efficiency: (85 + Math.random() * 10).toFixed(0),
+                    responseTime: (2 + Math.random() * 1).toFixed(1),
+                    survivalRate: (93 + Math.random() * 4).toFixed(0)
+                };
+
+                // 更新显示
+                const metricCards = document.querySelectorAll('.metric-value');
+                metricCards[0].textContent = metrics.availability + '%';
+                metricCards[1].textContent = metrics.efficiency + '%';
+                metricCards[2].textContent = metrics.responseTime + 's';
+                metricCards[3].textContent = metrics.survivalRate + '%';
+
+                // 更新Token预算
+                this.updateBudgetDisplay();
+            }
+
+            simulateAgentActivity() {
+                // 随机激活智能体
+                const agentIds = Object.keys(this.agents);
+                const randomAgent = agentIds[Math.floor(Math.random() * agentIds.length)];
+                
+                // 模拟Token消耗
+                if (Math.random() > 0.7) {
+                    this.usedBudget += Math.floor(Math.random() * 100);
+                    this.agents[randomAgent].tokens += Math.floor(Math.random() * 50);
+                }
+
+                // 更新智能体状态
+                this.updateAgentStatus(randomAgent);
+            }
+
+            updateAgentStatus(agentId) {
+                const statuses = ['idle', 'processing', 'active'];
+                const newStatus = statuses[Math.floor(Math.random() * statuses.length)];
+                this.agents[agentId].status = newStatus;
+
+                // 更新UI显示
+                const agentElement = document.querySelector(`[data-agent="${agentId}"]`);
+                const statusElement = agentElement.querySelector('.agent-status');
+                
+                let statusText = '';
+                switch (newStatus) {
+                    case 'idle':
+                        statusText = '待机';
+                        break;
+                    case 'processing':
+                        statusText = '处理中';
+                        break;
+                    case 'active':
+                        statusText = '运行中';
+                        break;
+                }
+                
+                statusElement.textContent = statusText + ' • ' + this.getAgentFunction(agentId);
+            }
+
+            getAgentFunction(agentId) {
+                const functions = {
+                    orchestration: '中央协调',
+                    discovery: '问题发现',
+                    validation: '假设验证',
+                    development: 'MVP构建',
+                    fundraising: '投资人就绪',
+                    monitoring: '实时监控'
+                };
+                return functions[agentId] || '未知功能';
+            }
+
+            updateBudgetDisplay() {
+                const budgetTotal = document.querySelector('.budget-total');
+                const budgetFill = document.querySelector('.budget-fill');
+                
+                budgetTotal.textContent = `${this.usedBudget.toLocaleString()} / ${this.totalBudget.toLocaleString()}`;
+                
+                const percentage = (this.usedBudget / this.totalBudget) * 100;
+                budgetFill.style.width = percentage + '%';
+                
+                // 根据使用率调整颜色
+                if (percentage > 80) {
+                    budgetFill.style.background = 'var(--error-color)';
+                } else if (percentage > 60) {
+                    budgetFill.style.background = 'var(--warning-color)';
+                } else {
+                    budgetFill.style.background = 'linear-gradient(90deg, var(--success-color), var(--warning-color))';
+                }
+            }
+        }
+
+        // 全局控制函数
+        function startOrchestration() {
+            console.log('启动智能体编排');
+            document.querySelector('.status-indicator').style.background = 'var(--success-color)';
+            document.querySelector('.status-indicator span').textContent = '编排运行中';
+            
+            // 添加视觉反馈
+            document.querySelectorAll('.workflow-connection').forEach(conn => {
+                conn.classList.add('active');
+            });
+        }
+
+        function pauseOrchestration() {
+            console.log('暂停智能体编排');
+            document.querySelector('.status-indicator').style.background = 'var(--warning-color)';
+            document.querySelector('.status-indicator span').textContent = '编排已暂停';
+            
+            // 移除活动状态
+            document.querySelectorAll('.workflow-connection').forEach(conn => {
+                conn.classList.remove('active');
+            });
+        }
+
+        function emergencyStop() {
+            console.log('紧急停止系统');
+            document.querySelector('.status-indicator').style.background = 'var(--error-color)';
+            document.querySelector('.status-indicator span').textContent = '系统已停止';
+            
+            // 停止所有活动
+            document.querySelectorAll('.workflow-node').forEach(node => {
+                node.classList.remove('active', 'processing');
+            });
+            document.querySelectorAll('.workflow-connection').forEach(conn => {
+                conn.classList.remove('active');
+            });
+        }
+
+        // 初始化系统
+        document.addEventListener('DOMContentLoaded', () => {
+            const orchestrator = new AgentOrchestrator();
+            
+            // 添加页面加载动画
+            document.querySelectorAll('.agent-item, .metric-card, .task-item').forEach((item, index) => {
+                item.style.animationDelay = (index * 0.1) + 's';
+                item.classList.add('fade-in');
+            });
+            
+            console.log('AIRVIO AI智能体统筹协调中枢已启动');
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 's':
+                        e.preventDefault();
+                        startOrchestration();
+                        break;
+                    case 'p':
+                        e.preventDefault();
+                        pauseOrchestration();
+                        break;
+                    case 'e':
+                        e.preventDefault();
+                        emergencyStop();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

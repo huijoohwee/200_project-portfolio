@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRVIO - Technical Document Generator</title>
+    <style>
+        /* MacOS风格变量 */
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #5856D6;
+            --success-color: #34C759;
+            --warning-color: #FF9500;
+            --error-color: #FF3B30;
+            --background-color: #F2F2F7;
+            --surface-color: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --border-color: #C6C6C8;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --code-bg: #F6F8FA;
+            --code-border: #E1E4E8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* 顶部导航栏 */
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            background: var(--surface-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 20px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            position: fixed;
+            width: 100%;
+            top: 0;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .brand-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056CC;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--background-color);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* 主容器 */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+            margin-top: 60px;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        /* 左侧配置面板 */
+        .sidebar {
+            width: 380px;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .config-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 14px;
+            transition: var(--transition);
+            background: var(--surface-color);
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .checkbox-item {
+            padding: 6px 12px;
+            background: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .checkbox-item:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .checkbox-item.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* 主内容区域 */
+        .content-area {
+            flex: 1;
+            background: var(--surface-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .content-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .progress-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar {
+            width: 120px;
+            height: 6px;
+            background: var(--background-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--success-color);
+            transition: width 0.3s ease;
+        }
+
+        .document-preview {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--background-color);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 技术文档样式 */
+        .tech-document {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .document-header {
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            color: white;
+            padding: 30px;
+            position: relative;
+        }
+
+        .document-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--success-color));
+        }
+
+        .document-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .document-subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .document-content {
+            padding: 30px;
+        }
+
+        .tech-section {
+            margin-bottom: 32px;
+        }
+
+        .tech-section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'SF Mono', Monaco, monospace;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .tech-section-content {
+            line-height: 1.6;
+            color: var(--text-primary);
+        }
+
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--code-border);
+            border-radius: var(--border-radius);
+            padding: 16px;
+            margin: 16px 0;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--code-border);
+        }
+
+        .code-language {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .copy-btn {
+            padding: 4px 8px;
+            font-size: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .copy-btn:hover {
+            background: #0056CC;
+        }
+
+        .api-endpoint {
+            background: var(--background-color);
+            border-left: 4px solid var(--primary-color);
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        }
+
+        .endpoint-method {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .method-get { background: var(--success-color); color: white; }
+        .method-post { background: var(--primary-color); color: white; }
+        .method-put { background: var(--warning-color); color: white; }
+        .method-delete { background: var(--error-color); color: white; }
+
+        .endpoint-url {
+            font-family: 'SF Mono', Monaco, monospace;
+            font-weight: 500;
+        }
+
+        .architecture-diagram {
+            background: var(--background-color);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin: 20px 0;
+            text-align: center;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .diagram-placeholder {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .tech-stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .tech-stack-item {
+            background: var(--background-color);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .stack-category {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .stack-items {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .requirement-list {
+            list-style: none;
+            margin: 16px 0;
+        }
+
+        .requirement-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .requirement-list li:last-child {
+            border-bottom: none;
+        }
+
+        .requirement-list li::before {
+            content: "⚡";
+            color: var(--warning-color);
+            font-weight: bold;
+            margin-top: 2px;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: var(--background-color);
+            padding: 16px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 4px;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Token预算控制面板 */
+        .token-budget-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background: var(--surface-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .token-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            color: var(--primary-color);
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .token-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .token-item:last-child {
+            border-bottom: none;
+        }
+
+        .token-total {
+            background: var(--background-color);
+            font-weight: 600;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 300px;
+            }
+            
+            .token-budget-panel {
+                position: relative;
+                bottom: auto;
+                right: auto;
+                width: 100%;
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <div class="logo">TD</div>
+            <div>
+                <div class="brand-text">AIRVIO Technical Document</div>
+                <div class="subtitle">智能技术文档生成器</div>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <button class="btn btn-secondary" onclick="exportDocument()">📄 导出文档</button>
+            <button class="btn btn-primary" onclick="generateDocument()">🚀 生成文档</button>
+        </div>
+    </nav>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 左侧配置面板 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">技术配置</div>
+                <div class="sidebar-subtitle">基于AIRVIO动态字段系统</div>
+            </div>
+
+            <!-- 项目基础信息 -->
+            <div class="config-section">
+                <div class="section-title">🏗️ 项目信息</div>
+                <div class="form-group">
+                    <label class="form-label">项目名称</label>
+                    <input type="text" class="form-input" id="projectName" placeholder="输入项目名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">技术栈类型</label>
+                    <select class="form-select" id="techStackType">
+                        <option value="fullstack">全栈应用</option>
+                        <option value="backend">后端服务</option>
+                        <option value="frontend">前端应用</option>
+                        <option value="mobile">移动应用</option>
+                        <option value="ai-ml">AI/ML系统</option>
+                        <option value="blockchain">区块链</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">项目描述</label>
+                    <textarea class="form-textarea" id="projectDescription" placeholder="简要描述项目的技术特点和功能"></textarea>
+                </div>
+            </div>
+
+            <!-- 架构设计 -->
+            <div class="config-section">
+                <div class="section-title">🏛️ 架构设计</div>
+                <div class="form-group">
+                    <label class="form-label">架构模式</label>
+                    <select class="form-select" id="architecturePattern">
+                        <option value="microservices">微服务架构</option>
+                        <option value="monolithic">单体架构</option>
+                        <option value="serverless">无服务器架构</option>
+                        <option value="event-driven">事件驱动架构</option>
+                        <option value="layered">分层架构</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">数据库类型</label>
+                    <select class="form-select" id="databaseType">
+                        <option value="relational">关系型数据库</option>
+                        <option value="nosql">NoSQL数据库</option>
+                        <option value="hybrid">混合数据库</option>
+                        <option value="inmemory">内存数据库</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">部署环境</label>
+                    <select class="form-select" id="deploymentEnv">
+                        <option value="cloud">云原生</option>
+                        <option value="container">容器化</option>
+                        <option value="traditional">传统部署</option>
+                        <option value="edge">边缘计算</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- API设计 -->
+            <div class="config-section">
+                <div class="section-title">🔌 API设计</div>
+                <div class="form-group">
+                    <label class="form-label">API类型</label>
+                    <select class="form-select" id="apiType">
+                        <option value="rest">RESTful API</option>
+                        <option value="graphql">GraphQL</option>
+                        <option value="grpc">gRPC</option>
+                        <option value="websocket">WebSocket</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">认证方式</label>
+                    <select class="form-select" id="authMethod">
+                        <option value="jwt">JWT Token</option>
+                        <option value="oauth">OAuth 2.0</option>
+                        <option value="apikey">API Key</option>
+                        <option value="basic">Basic Auth</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 性能要求 -->
+            <div class="config-section">
+                <div class="section-title">⚡ 性能要求</div>
+                <div class="form-group">
+                    <label class="form-label">响应时间目标 (ms)</label>
+                    <input type="number" class="form-input" id="responseTime" value="200" min="50" max="5000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">并发用户数</label>
+                    <input type="number" class="form-input" id="concurrentUsers" value="1000" min="10" max="100000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">可用性目标 (%)</label>
+                    <input type="number" class="form-input" id="availability" value="99.9" min="95" max="99.99" step="0.1">
+                </div>
+            </div>
+
+            <!-- 技术标签 -->
+            <div class="config-section">
+                <div class="section-title">🏷️ 技术标签</div>
+                <div class="checkbox-group">
+                    <div class="checkbox-item" data-tag="ai-native">AI原生</div>
+                    <div class="checkbox-item" data-tag="cloud-native">云原生</div>
+                    <div class="checkbox-item" data-tag="microservices">微服务</div>
+                    <div class="checkbox-item" data-tag="containerized">容器化</div>
+                    <div class="checkbox-item" data-tag="scalable">可扩展</div>
+                    <div class="checkbox-item" data-tag="high-performance">高性能</div>
+                    <div class="checkbox-item" data-tag="real-time">实时处理</div>
+                    <div class="checkbox-item" data-tag="secure">安全</div>
+                    <div class="checkbox-item" data-tag="distributed">分布式</div>
+                    <div class="checkbox-item" data-tag="event-driven">事件驱动</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="content-area">
+            <div class="content-header">
+                <div class="content-title">Technical Document 预览</div>
+                <div class="progress-indicator">
+                    <span>生成进度</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                    </div>
+                    <span id="progressText">0%</span>
+                </div>
+            </div>
+
+            <div class="document-preview" id="documentPreview">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    点击"生成文档"开始创建您的Technical Document
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Token预算控制面板 -->
+    <div class="token-budget-panel">
+        <div class="token-header">💰 Token预算监控</div>
+        <div class="token-item">
+            <span>架构设计</span>
+            <span id="architectureTokens">15,200</span>
+        </div>
+        <div class="token-item">
+            <span>API文档</span>
+            <span id="apiTokens">12,800</span>
+        </div>
+        <div class="token-item">
+            <span>代码示例</span>
+            <span id="codeTokens">8,500</span>
+        </div>
+        <div class="token-item">
+            <span>性能分析</span>
+            <span id="performanceTokens">6,200</span>
+        </div>
+        <div class="token-item">
+            <span>部署指南</span>
+            <span id="deploymentTokens">4,300</span>
+        </div>
+        <div class="token-item token-total">
+            <span>总使用</span>
+            <span id="totalTokens">47,000 / 53,000</span>
+        </div>
+    </div>
+
+    <script>
+        // 动态字段配置数据
+        const dynamicFields = {
+            GSTR_CORE_ARCHITECTURE: {
+                "zh-CN": "GSTR核心架构",
+                "en-US": "GSTR Core Architecture",
+                "description": "目标-空间-时间-资源四元融合执行体系",
+                "type": "object",
+                "priority": "P0"
+            },
+            QUALITY_ASSURANCE: {
+                "zh-CN": "质量保障体系",
+                "en-US": "Quality Assurance System",
+                "description": "三环验证的质量保障体系",
+                "type": "object",
+                "priority": "P0"
+            },
+            MONITORING_AND_OPTIMIZATION: {
+                "zh-CN": "监控与优化",
+                "en-US": "Monitoring and Optimization",
+                "description": "系统监控阈值与优化触发机制",
+                "type": "object",
+                "priority": "P1"
+            },
+            SEMANTIC_SYMBOLS: {
+                "zh-CN": "语义符号集",
+                "en-US": "Semantic Symbols",
+                "description": "高效语义表达的符号体系",
+                "type": "object",
+                "priority": "P1"
+            }
+        };
+
+        // 技术栈配置
+        const techStacks = {
+            fullstack: {
+                frontend: ["React", "Vue.js", "TypeScript"],
+                backend: ["Node.js", "Python", "Java"],
+                database: ["PostgreSQL", "MongoDB", "Redis"],
+                infrastructure: ["Docker", "Kubernetes", "AWS"]
+            },
+            backend: {
+                framework: ["Express.js", "FastAPI", "Spring Boot"],
+                database: ["PostgreSQL", "MySQL", "MongoDB"],
+                cache: ["Redis", "Memcached"],
+                infrastructure: ["Docker", "Nginx", "Load Balancer"]
+            },
+            frontend: {
+                framework: ["React", "Vue.js", "Angular"],
+                styling: ["Tailwind CSS", "Styled Components"],
+                build: ["Webpack", "Vite", "Rollup"],
+                deployment: ["Vercel", "Netlify", "CDN"]
+            },
+            mobile: {
+                framework: ["React Native", "Flutter", "Swift"],
+                backend: ["Firebase", "AWS Amplify"],
+                database: ["SQLite", "Realm", "Core Data"],
+                deployment: ["App Store", "Google Play"]
+            },
+            "ai-ml": {
+                framework: ["TensorFlow", "PyTorch", "Scikit-learn"],
+                infrastructure: ["GPU Clusters", "MLOps", "Kubeflow"],
+                data: ["Apache Spark", "Pandas", "NumPy"],
+                deployment: ["Model Serving", "Edge Deployment"]
+            }
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeTagSelection();
+            updateTokenBudget();
+        });
+
+        // 标签选择功能
+        function initializeTagSelection() {
+            const checkboxItems = document.querySelectorAll('.checkbox-item');
+            checkboxItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    updateTokenBudget();
+                });
+            });
+        }
+
+        // 更新Token预算
+        function updateTokenBudget() {
+            const selectedTags = document.querySelectorAll('.checkbox-item.active').length;
+            const baseTokens = 47000;
+            
+            // 根据选择的标签和配置动态计算Token分配
+            const architectureTokens = Math.floor(baseTokens * 0.32);
+            const apiTokens = Math.floor(baseTokens * 0.27);
+            const codeTokens = Math.floor(baseTokens * 0.18);
+            const performanceTokens = Math.floor(baseTokens * 0.13);
+            const deploymentTokens = Math.floor(baseTokens * 0.10);
+            const totalUsed = architectureTokens + apiTokens + codeTokens + performanceTokens + deploymentTokens;
+            
+            document.getElementById('architectureTokens').textContent = architectureTokens.toLocaleString();
+            document.getElementById('apiTokens').textContent = apiTokens.toLocaleString();
+            document.getElementById('codeTokens').textContent = codeTokens.toLocaleString();
+            document.getElementById('performanceTokens').textContent = performanceTokens.toLocaleString();
+            document.getElementById('deploymentTokens').textContent = deploymentTokens.toLocaleString();
+            document.getElementById('totalTokens').textContent = `${totalUsed.toLocaleString()} / 53,000`;
+        }
+
+        // 生成技术文档
+        function generateDocument() {
+            const projectName = document.getElementById('projectName').value || '示例技术项目';
+            const techStackType = document.getElementById('techStackType').value;
+            const projectDescription = document.getElementById('projectDescription').value || '基于现代技术栈的高性能应用系统';
+            const architecturePattern = document.getElementById('architecturePattern').value;
+            const databaseType = document.getElementById('databaseType').value;
+            const deploymentEnv = document.getElementById('deploymentEnv').value;
+            const apiType = document.getElementById('apiType').value;
+            const authMethod = document.getElementById('authMethod').value;
+            const responseTime = document.getElementById('responseTime').value;
+            const concurrentUsers = document.getElementById('concurrentUsers').value;
+            const availability = document.getElementById('availability').value;
+            const selectedTags = Array.from(document.querySelectorAll('.checkbox-item.active')).map(item => item.dataset.tag);
+            
+            // 显示进度
+            showProgress();
+            
+            // 模拟生成过程
+            setTimeout(() => {
+                const documentHTML = generateTechDocumentHTML({
+                    projectName,
+                    techStackType,
+                    projectDescription,
+                    architecturePattern,
+                    databaseType,
+                    deploymentEnv,
+                    apiType,
+                    authMethod,
+                    responseTime,
+                    concurrentUsers,
+                    availability,
+                    selectedTags
+                });
+                
+                document.getElementById('documentPreview').innerHTML = documentHTML;
+                document.getElementById('progressFill').style.width = '100%';
+                document.getElementById('progressText').textContent = '100%';
+            }, 2500);
+        }
+
+        // 显示生成进度
+        function showProgress() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 12;
+                if (progress >= 95) {
+                    progress = 95;
+                    clearInterval(interval);
+                }
+                document.getElementById('progressFill').style.width = progress + '%';
+                document.getElementById('progressText').textContent = Math.round(progress) + '%';
+            }, 200);
+        }
+
+        // 生成技术文档HTML
+        function generateTechDocumentHTML(data) {
+            const stackTypeNames = {
+                'fullstack': '全栈应用',
+                'backend': '后端服务',
+                'frontend': '前端应用',
+                'mobile': '移动应用',
+                'ai-ml': 'AI/ML系统',
+                'blockchain': '区块链'
+            };
+            
+            const architectureNames = {
+                'microservices': '微服务架构',
+                'monolithic': '单体架构',
+                'serverless': '无服务器架构',
+                'event-driven': '事件驱动架构',
+                'layered': '分层架构'
+            };
+            
+            const tagNames = {
+                'ai-native': 'AI原生',
+                'cloud-native': '云原生',
+                'microservices': '微服务',
+                'containerized': '容器化',
+                'scalable': '可扩展',
+                'high-performance': '高性能',
+                'real-time': '实时处理',
+                'secure': '安全',
+                'distributed': '分布式',
+                'event-driven': '事件驱动'
+            };
+            
+            const currentStack = techStacks[data.techStackType] || techStacks.fullstack;
+            
+            return `
+                <div class="tech-document">
+                    <div class="document-header">
+                        <div class="document-title">${data.projectName}</div>
+                        <div class="document-subtitle">Technical Documentation - ${stackTypeNames[data.techStackType]}</div>
+                    </div>
+                    
+                    <div class="document-content">
+                        <!-- 项目概述 -->
+                        <div class="tech-section">
+                            <div class="tech-section-title">📋 项目概述</div>
+                            <div class="tech-section-content">
+                                <p><strong>项目描述：</strong>${data.projectDescription}</p>
+                                <p><strong>技术栈类型：</strong>${stackTypeNames[data.techStackType]}</p>
+                                <p><strong>架构模式：</strong>${architectureNames[data.architecturePattern]}</p>
+                                <p><strong>部署环境：</strong>${data.deploymentEnv}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 系统架构 -->
+                        <div class="tech-section">
+                            <div class="tech-section-title">🏛️ 系统架构</div>
+                            <div class="tech-section-content">
+                                <p><strong>架构设计原则：</strong></p>
+                                <ul class="requirement-list">
+                                    <li>高可用性设计，目标可用性 ${data.availability}%</li>
+                                    <li>水平扩展能力，支持 ${data.concurrentUsers} 并发用户</li>
+                                    <li>响应时间优化，目标 ${data.responseTime}ms 内响应</li>
+                                    <li>容错机制和故障恢复</li>
+                                    <li>安全性和数据保护</li>
+                                </ul>
+                                
+                                <div class="architecture-diagram">
+                                    <div class="diagram-placeholder">
+                                        🏗️ 系统架构图<br>
+                                        [${architectureNames[data.architecturePattern]}]<br>
+                                        <small>基于 ${data.deploymentEnv} 部署环境</small>
+                                    </div>
+                                </div>
+                                
+                                <p><strong>GSTR四元架构应用：</strong></p>
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-language">GSTR Framework</span>
+                                    </div>
+                                    <pre>目标(Goal): ${data.projectName} 高性能系统
+空间(Space): ${architectureNames[data.architecturePattern]} + ${data.deploymentEnv}
+时间(Time): ${data.responseTime}ms 响应时间目标
+资源(Resource): ${data.concurrentUsers} 并发用户支持</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 技术栈 -->
+                        <div class="tech-section">
+                            <div class="tech-section-title">🛠️ 技术栈</div>
+                            <div class="tech-section-content">
+                                <div class="tech-stack-grid">
+                                    ${Object.entries(currentStack).map(([category, items]) => `
+                                        <div class="tech-stack-item">
+                                            <div class="stack-category">${category.toUpperCase()}</div>
+                                            <div class="stack-items">${items.join(', ')}</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                
+                                <p><strong>选择的技术标签：</strong></p>
+                                <div class="checkbox-group">
+                                    ${data.selectedTags.map(tag => `<div class="checkbox-item active">${tagNames[tag] || tag}</div>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- API设计 -->
+                        <div class="tech-section">
+                            <div class="tech-section-title">🔌 API设计</div>
+                            <div class="tech-section-content">
+                                <p><strong>API架构：</strong>${data.apiType.toUpperCase()}</p>
+                                <p><strong>认证方式：</strong>${data.authMethod.toUpperCase()}</p>
+                                
+                                <div class="api-endpoint">
+                                    <span class="endpoint-method method-get">GET</span>
+                                    <span class="endpoint-url">/api/v1/health</span>
+                                    <p style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">系统健康检查接口</p>
+                                </div>
+                                
+                                <div class="api-endpoint">
+                                    <span class="endpoint-method method-post">POST</span>
+                                    <span class="endpoint-url">/api/v1/auth/login</span>
+                                    <p style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">用户登录认证接口</p>
+                                </div>
+                                
+                                <div class="api-endpoint">
+                                    <span class="endpoint-method method-get">GET</span>
+                                    <span class="endpoint-url">/api/v1/data/{id}</span>
+                                    <p style="margin-top: 8px; font-size: 14px; color: var(--text-secondary);">数据查询接口</p>
+                                </div>
+                                
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-language">JSON Response Example</span>
+                                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                                    </div>
+                                    <pre>{
+  "status": "success",
+  "data": {
+    "id": "12345",
+    "name": "${data.projectName}",
+    "version": "1.0.0",
+    "performance": {
+      "responseTime": "${data.responseTime}ms",
+      "availability": "${data.availability}%"
+    }
+  },
+  "timestamp": "2025-01-08T10:30:00Z"
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 性能指标 -->
+                        <div class="tech-section">
+                            <div class="tech-section-title">📊 性能指标</div>
+                            <div class="tech-section-content">
+                                <div class="performance-metrics">
+                                    <div class="metric-card">
+                                        <div class="metric-value">${data.responseTime}ms</div>
+                                        <div class="metric-label">响应时间</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">${data.concurrentUsers}</div>
+                                        <div class="metric-label">并发用户</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">${data.availability}%</div>
+                                        <div class="metric-label">可用性</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">≥95%</div>
+                                        <div class="metric-label">系统稳定性</div>
+                                    </div>
+                                </div>
+                                
+                                <p><strong>监控与优化策略：</strong></p>
+                                <ul class="requirement-list">
+                                    <li>实时性能监控和告警系统</li>
+                                    <li>自动扩缩容机制</li>
+                                    <li>缓存策略优化</li>
+                                    <li>数据库查询优化</li>
+                                    <li>CDN和负载均衡</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- 部署指南 -->
+                        <div class="tech-section">
+                            <div class="tech-section-title">🚀 部署指南</div>
+                            <div class="tech-section-content">
+                                <p><strong>部署环境：</strong>${data.deploymentEnv}</p>
+                                
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-language">Docker Compose</span>
+                                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                                    </div>
+                                    <pre>version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=database
+    depends_on:
+      - database
+      - redis
+  
+  database:
+    image: postgres:14
+    environment:
+      - POSTGRES_DB=${data.projectName.toLowerCase()}
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=secure_password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  db_data:</pre>
+                                </div>
+                                
+                                <p><strong>部署步骤：</strong></p>
+                                <ul class="requirement-list">
+                                    <li>环境准备和依赖安装</li>
+                                    <li>配置文件设置</li>
+                                    <li>数据库初始化</li>
+                                    <li>应用构建和部署</li>
+                                    <li>健康检查和监控配置</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- 质量保障 -->
+                        <div class="tech-section">
+                            <div class="tech-section-title">✅ 质量保障</div>
+                            <div class="tech-section-content">
+                                <p><strong>三环验证体系：</strong></p>
+                                <div class="performance-metrics">
+                                    <div class="metric-card">
+                                        <div class="metric-value">架构闭环</div>
+                                        <div class="metric-label">技术验证</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">生存闭环</div>
+                                        <div class="metric-label">市场验证</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">价值闭环</div>
+                                        <div class="metric-label">商业验证</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="code-block">
+                                    <div class="code-header">
+                                        <span class="code-language">测试配置</span>
+                                        <button class="copy-btn" onclick="copyCode(this)">复制</button>
+                                    </div>
+                                    <pre>// 单元测试覆盖率目标: ≥80%
+// 集成测试覆盖率目标: ≥70%
+// 性能测试: 响应时间 ≤ ${data.responseTime}ms
+// 压力测试: ${data.concurrentUsers} 并发用户
+// 可用性测试: ≥ ${data.availability}%
+
+module.exports = {
+  testEnvironment: 'node',
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80
+    }
+  },
+  collectCoverageFrom: [
+    'src/**/*.{js,ts}',
+    '!src/**/*.test.{js,ts}'
+  ]
+};</pre>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Token经济模型 -->
+                        <div class="tech-section">
+                            <div class="tech-section-title">💰 Token经济模型</div>
+                            <div class="tech-section-content">
+                                <p><strong>技术文档Token分配策略：</strong></p>
+                                <div class="performance-metrics">
+                                    <div class="metric-card">
+                                        <div class="metric-value">32%</div>
+                                        <div class="metric-label">架构设计</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">27%</div>
+                                        <div class="metric-label">API文档</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">18%</div>
+                                        <div class="metric-label">代码示例</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">13%</div>
+                                        <div class="metric-label">性能分析</div>
+                                    </div>
+                                    <div class="metric-card">
+                                        <div class="metric-value">10%</div>
+                                        <div class="metric-label">部署指南</div>
+                                    </div>
+                                </div>
+                                <p style="margin-top: 16px;"><strong>优化策略：</strong>代码模板复用 + 架构模式缓存 + 智能文档生成</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 复制代码功能
+        function copyCode(button) {
+            const codeBlock = button.closest('.code-block').querySelector('pre');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                button.textContent = '已复制';
+                setTimeout(() => {
+                    button.textContent = '复制';
+                }, 2000);
+            }).catch(() => {
+                // 降级方案
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                button.textContent = '已复制';
+                setTimeout(() => {
+                    button.textContent = '复制';
+                }, 2000);
+            });
+        }
+
+        // 导出文档
+        function exportDocument() {
+            const documentContent = document.getElementById('documentPreview').innerHTML;
+            if (documentContent.includes('loading')) {
+                alert('请先生成文档后再导出');
+                return;
+            }
+            
+            const blob = new Blob([`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Technical Document</title>
+                    <style>
+                        body { font-family: -apple-system, BlinkMacSystemFont, 'SF Mono', Monaco, monospace; margin: 40px; background: #f5f5f7; }
+                        .tech-document { max-width: 900px; margin: 0 auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+                        .document-header { background: linear-gradient(135deg, #1a1a1a, #2d2d2d); color: white; padding: 30px; position: relative; }
+                        .document-header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #007AFF, #5856D6, #34C759); }
+                        .document-title { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+                        .document-subtitle { font-size: 16px; opacity: 0.8; }
+                        .document-content { padding: 30px; }
+                        .tech-section { margin-bottom: 32px; }
+                        .tech-section-title { font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #007AFF; border-bottom: 2px solid #E1E4E8; padding-bottom: 8px; }
+                        .code-block { background: #F6F8FA; border: 1px solid #E1E4E8; border-radius: 8px; padding: 16px; margin: 16px 0; font-family: 'SF Mono', Monaco, monospace; font-size: 14px; overflow-x: auto; }
+                        .api-endpoint { background: #F2F2F7; border-left: 4px solid #007AFF; padding: 16px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+                        .endpoint-method { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-right: 8px; color: white; }
+                        .method-get { background: #34C759; }
+                        .method-post { background: #007AFF; }
+                        .method-put { background: #FF9500; }
+                        .method-delete { background: #FF3B30; }
+                        .performance-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin: 20px 0; }
+                        .metric-card { background: #F2F2F7; padding: 16px; border-radius: 8px; text-align: center; border: 1px solid #C6C6C8; }
+                        .metric-value { font-size: 24px; font-weight: 700; color: #007AFF; margin-bottom: 4px; }
+                        .metric-label { font-size: 12px; color: #8E8E93; text-transform: uppercase; }
+                        .requirement-list { list-style: none; margin: 16px 0; }
+                        .requirement-list li { padding: 8px 0; border-bottom: 1px solid #E1E4E8; }
+                        .requirement-list li::before { content: "⚡"; color: #FF9500; font-weight: bold; margin-right: 8px; }
+                        .tech-stack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0; }
+                        .tech-stack-item { background: #F2F2F7; padding: 16px; border-radius: 8px; border-left: 4px solid #007AFF; }
+                        .stack-category { font-size: 14px; font-weight: 600; color: #007AFF; margin-bottom: 8px; }
+                        .stack-items { font-size: 13px; color: #8E8E93; }
+                        .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+                        .checkbox-item { padding: 6px 12px; background: #007AFF; color: white; border-radius: 16px; font-size: 12px; }
+                        .architecture-diagram { background: #F2F2F7; border: 2px dashed #C6C6C8; border-radius: 8px; padding: 24px; margin: 20px 0; text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    ${documentContent}
+                </body>
+                </html>
+            `
